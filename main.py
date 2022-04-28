@@ -13,13 +13,13 @@ import time
 #Define constants
 
 n_nodes = 10
-n_vehicles = 10
 
 
 
-#Define indices list
+
+#Define lists
 n = list(range(n_nodes))
-k = list(range(n_vehicles))
+
 
 startTimeSetUp = time.time()
 model = Model()
@@ -29,7 +29,8 @@ model = Model()
 ### DEFINE VARIABLES ###
 #################
 
-x ={}
+x = {}
+k = {}
 
 
 model.update()
@@ -42,8 +43,7 @@ obj        = LinExpr()
             
 
 model.setObjective(obj,GRB.MINIMIZE)
-model.update()
-model.write('model_formulation.lp')    
+ 
 
 ###################
 ### DEFINE CONSTRAINTS ###
@@ -91,6 +91,7 @@ model.write('model_formulation.lp')
 
 
 
-
+model.update()
+model.write('model_formulation.lp')   
 model.optimize()
 endTime   = time.time()
