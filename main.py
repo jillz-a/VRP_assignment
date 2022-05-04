@@ -83,14 +83,12 @@ for n2 in range(n_nodes):
 
 
 #If a vehicle visits a customer, then the same vehicle must leave that customer
-
-for n1 in range(n_nodes):
-    for k in range(n_vehicles):
+for k in range(n_vehicles):
+    for n1 in range(n_nodes):
             model.addConstr(quicksum(x[n1,n2,k] for n2 in range(n_nodes) if n2 != n1), GRB.EQUAL, quicksum(x[n2,n1,k] for n2 in range(n_nodes) if n2 != n1))
 
 
 #Capacity contraints
-
 
 
 
@@ -126,4 +124,12 @@ for n1 in range(n_nodes):
 
 pos=nx.get_node_attributes(G,'pos')
 nx.draw(G, pos, with_labels= True)
+
+edges = [(n1,n2) for n1,n2 in G.edges]
+edge_labels = {}
+for i in range(len(edges)):
+    edge_labels[edges[i]] = i
+
+nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+
 plt.show()
