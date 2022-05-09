@@ -87,6 +87,11 @@ for k in range(n_vehicles):
     for n1 in range(n_nodes):
             model.addConstr(quicksum(x[n1,n2,k] for n2 in range(n_nodes) if n2 != n1), GRB.EQUAL, quicksum(x[n2,n1,k] for n2 in range(n_nodes) if n2 != n1))
 
+#Subtour elimination
+
+
+#for k in range(n_vehicles):
+#    model.addConstr(quicksum(x[i,j,k] for i in range(1,n_nodes) for j in range(1,n_nodes) if i != j), GRB.LESS_EQUAL, 1)
 
 #Capacity contraints
 
