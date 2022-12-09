@@ -158,19 +158,26 @@ fig.update_layout(title_text='Connection Map Depicting Flights for Airline Netwo
                   margin={"t": 0, "b": 0, "l": 0, "r": 0, "pad": 0},
                   showlegend=False,
                   geo=dict(showland=True, landcolor='white', countrycolor='grey', bgcolor="lightgrey", resolution=50))
+Sapt_df = pd.read_csv('airportsUnique.csv')
 
-# =============================================================================
-# fig.add_trace(
-#     go.Scattergeo(
-#                 lon=airports_lon,
-#                 lat=airports_lat,
-#                 hoverinfo='text',
-#                 text=airports,
-#                 mode='markers+text',
-#                 textposition="top center",
-#                 marker=dict(size=3, color='rgb(0,0,0)', opacity=1)))
-# 
-# =============================================================================
+airports = []
+airports_lon = []
+airports_lat =[]
+
+for idx in range(len(Sapt_df['airport'])):
+    airports.append(Sapt_df['airport'][idx])
+    airports_lon.append(Sapt_df['lon'][idx])
+    airports_lat.append(Sapt_df['lat'][idx])
+fig.add_trace(
+    go.Scattergeo(
+                lon=airports_lon,
+                lat=airports_lat,
+                hoverinfo='text',
+                text=airports,
+                mode='markers+text',
+                textposition="top center",
+                marker=dict(size=3, color='rgb(0,0,0)', opacity=1)))
+
 fig.show()
 
 

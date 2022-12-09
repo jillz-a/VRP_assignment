@@ -84,7 +84,7 @@ def retrieve_apts():
     
     d = {'origin': origin_lst, 'destination': destination_lst, 'route': route_lst, 'lat_origin':lat_lst1, 'lon_origin': lon_lst1, 'lat_destination':lat_lst2, 'lon_destination': lon_lst2}
     exp_df = pd.DataFrame(data=d)
-    exp_df.to_csv('routes.csv')
+    #exp_df.to_csv('routes.csv')
     
     
     
@@ -143,7 +143,9 @@ def retrieve_apts():
             mat[apt1][apt2] = route_dist
     
     exp_df3 = pd.DataFrame(mat)
-    exp_df3.to_csv('dist.csv')
+    #exp_df3.to_csv('dist.csv')
+    
+
     
     # Uncomment to Visualize
     
