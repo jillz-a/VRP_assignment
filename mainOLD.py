@@ -62,16 +62,34 @@ model.setObjective(obj,GRB.MINIMIZE)
            
 #Each vehicle must leave the depot
 
+# =============================================================================
+# for k in range(n_vehicles):
+#     model.addConstr(quicksum(x[0,n2,k] for n2 in range(1,n_nodes)), GRB.EQUAL, 1)
+# 
+# 
+# #Each vehicle must return to the depot
+# 
+# for k in range(n_vehicles):
+#     model.addConstr(quicksum(x[n1,0,k] for n1 in range(1,n_nodes)), GRB.EQUAL, 1)
+# 
+# 
+# =============================================================================
 for k in range(n_vehicles):
-    model.addConstr(quicksum(x[0,n2,k] for n2 in range(1,n_nodes)), GRB.EQUAL, 1)
+    model.addConstr(quicksum(x[0,n2,k] for n2 in range(1,n_nodes)), GRB.EQUAL, quicksum(x[n1,0,k] for n1 in range(1,n_nodes)))
 
 
 #Each vehicle must return to the depot
 
 for k in range(n_vehicles):
-    model.addConstr(quicksum(x[n1,0,k] for n1 in range(1,n_nodes)), GRB.EQUAL, 1)
+    model.addConstr(quicksum(x[n1,0,k] for n1 in range(1,n_nodes)), GRB.GREATER_EQUAL, 1)
 
 
+for k in range(n_vehicles):
+    for i in range(n_nodes):
+        for j in range(n_nodes):
+            if i != j:
+                model.addConstr(x[i,j,k] + x[j,i,k], GRB.LESS_EQUAL, 1)
+    
 
 
 #Each customer must be visited by a vehicle
@@ -90,9 +108,11 @@ for k in range(n_vehicles):
 #Subtour elimination
 
 
-for k in range(n_vehicles):
-    model.addConstr(quicksum(x[i,j,k] for i in range(1,n_nodes) for j in range(1,n_nodes) if i != j), GRB.LESS_EQUAL, n_nodes -2)
-
+# =============================================================================
+# for k in range(n_vehicles):
+#     model.addConstr(quicksum(x[i,j,k] for i in range(1,n_nodes) for j in range(1,n_nodes) if i != j), GRB.LESS_EQUAL, n_nodes -2)
+# 
+# =============================================================================
 #Capacity contraints
 
 

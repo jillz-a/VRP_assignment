@@ -1,5 +1,5 @@
 #Operations Optimization assignment
-#Vehicle routing problem for train scheduling of all KLM City hopper flights
+#Vehicle routing problem for train scheduling of all KLM Cityhopper flights
 #By: Jaime Aalders, Mitchell de Keijzer, Jilles Andringa
 import pandas as pd
 from gurobipy import Model,GRB,LinExpr, quicksum
@@ -8,6 +8,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.io as pio
+pio.renderers.default = 'browser'
 
 
 #import data
@@ -63,18 +64,30 @@ model.setObjective(obj,GRB.MINIMIZE)
 ### DEFINE CONSTRAINTS ###
 ###################
 
+#Amsterdam hub is node number 3
            
 #Each vehicle must leave the depot
 
+
 for k in range(n_vehicles):
-    model.addConstr(quicksum(x[0,n2,k] for n2 in range(1,n_nodes)), GRB.EQUAL, 1)
+    model.addConstr(quicksum(x[3,n2,k] for n2 in range(n_nodes) if n2 != 3), GRB.EQUAL, quicksum(x[n1,3,k] for n1 in range(n_nodes) if n1 != 3))
 
 
 #Each vehicle must return to the depot
 
 for k in range(n_vehicles):
-    model.addConstr(quicksum(x[n1,0,k] for n1 in range(1,n_nodes)), GRB.EQUAL, 1)
+    model.addConstr(quicksum(x[n1,0,k] for n1 in range(1,n_nodes)), GRB.GREATER_EQUAL, 1)
 
+
+#Remove case where vehicule only goes up and down
+    
+    
+for k in range(n_vehicles):
+    for i in range(n_nodes):
+        for j in range(n_nodes):
+            if i != j:
+                model.addConstr(x[i,j,k] + x[j,i,k], GRB.LESS_EQUAL, 1)
+    
 
 
 
@@ -89,14 +102,16 @@ for n2 in range(n_nodes):
 #If a vehicle visits a customer, then the same vehicle must leave that customer
 for k in range(n_vehicles):
     for n1 in range(n_nodes):
-            model.addConstr(quicksum(x[n1,n2,k] for n2 in range(n_nodes) if n2 != n1), GRB.EQUAL, quicksum(x[n2,n1,k] for n2 in range(n_nodes) if n2 != n1))
+            model.addConstr(quicksum(x[n2,n1,k] for n2 in range(n_nodes) if n2 != n1), GRB.EQUAL, quicksum(x[n1,n2,k] for n2 in range(n_nodes) if n2 != n1))
 
 #Subtour elimination
-
-
-for k in range(n_vehicles):
-    model.addConstr(quicksum(x[i,j,k] for i in range(1,n_nodes) for j in range(1,n_nodes) if i != j), GRB.LESS_EQUAL, n_nodes -2)
-
+# =============================================================================
+# 
+# 
+# for k in range(n_vehicles):
+#     model.addConstr(quicksum(x[i,j,k] for i in range(1,n_nodes) for j in range(1,n_nodes) if i != j), GRB.LESS_EQUAL, n_nodes -2)
+# 
+# =============================================================================
 #Capacity contraints
 
 
