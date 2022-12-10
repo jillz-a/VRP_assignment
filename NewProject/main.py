@@ -19,7 +19,7 @@ pos = pd.read_excel('nodes_loc.xlsx', sheet_name='loc')
 
 #Define constants
 
-n_vehicles = 1 #number of trains
+n_vehicles = 5 #number of trains
 
 #Define lists
 
@@ -69,16 +69,18 @@ model.setObjective(obj,GRB.MINIMIZE)
 #Each vehicle must leave the depot
 
 
-for k in range(n_vehicles):
-    model.addConstr(quicksum(x[3,n2,k] for n2 in range(n_nodes) if n2 != 3), GRB.EQUAL, quicksum(x[n1,3,k] for n1 in range(n_nodes) if n1 != 3))
-
-
-#Each vehicle must return to the depot
+#Each vehicle which leaves depot must return to the depot
 
 for k in range(n_vehicles):
-    model.addConstr(quicksum(x[n1,0,k] for n1 in range(1,n_nodes)), GRB.GREATER_EQUAL, 1)
+    model.addConstr(quicksum(x[n1,3,k] for n1 in range(n_nodes) if n1 != 3), GRB.EQUAL, quicksum(x[3,n1,k] for n1 in range(n_nodes) if n1 != 3))
 
-
+# =============================================================================
+# 
+# for k in range(n_vehicles):
+#     model.addConstr(quicksum(x[3,n1,k] for n1 in range(n_nodes) if n1 != 3), GRB.GREATER_EQUAL, 1)
+# 
+# 
+# =============================================================================
 #Remove case where vehicule only goes up and down
     
     
@@ -105,13 +107,11 @@ for k in range(n_vehicles):
             model.addConstr(quicksum(x[n2,n1,k] for n2 in range(n_nodes) if n2 != n1), GRB.EQUAL, quicksum(x[n1,n2,k] for n2 in range(n_nodes) if n2 != n1))
 
 #Subtour elimination
-# =============================================================================
-# 
-# 
-# for k in range(n_vehicles):
-#     model.addConstr(quicksum(x[i,j,k] for i in range(1,n_nodes) for j in range(1,n_nodes) if i != j), GRB.LESS_EQUAL, n_nodes -2)
-# 
-# =============================================================================
+
+
+for k in range(n_vehicles):
+    model.addConstr(quicksum(x[i,j,k] for i in range(1,n_nodes) for j in range(1,n_nodes) if i != j), GRB.LESS_EQUAL, n_nodes -2)
+
 #Capacity contraints
 
 
@@ -157,6 +157,7 @@ for n1 in range(n_nodes):
 fig = go.Figure()
 source_to_dest = zip(slat_lst, dlat_lst, slon_lst, dlon_lst, nr_flights)
 
+color_lst = ['red','blue','green', 'cyan', 'yellow','grey']
 # Loop through each flight entry
 for slat, dlat, slon, dlon, num_flights in source_to_dest:
 
@@ -164,7 +165,7 @@ for slat, dlat, slon, dlon, num_flights in source_to_dest:
                         lat=[slat, dlat],
                         lon=[slon, dlon],
                         mode='lines',
-                        line=dict(width=num_flights + 1, color = 'red')
+                        line=dict(width= 1, color = color_lst[num_flights])
                         ))
 
 

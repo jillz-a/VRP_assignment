@@ -14,7 +14,7 @@ pos = pd.read_excel('nodes_loc.xlsx', sheet_name='loc')
 
 #Define constants
 
-n_vehicles = 1 #number of bagage vehicles
+n_vehicles = 4 #number of bagage vehicles
 
 #Define lists
 
@@ -79,9 +79,18 @@ for k in range(n_vehicles):
 
 
 #Each vehicle must return to the depot
+# =============================================================================
+# 
+# for k in range(n_vehicles):
+#     model.addConstr(quicksum(x[n1,0,k] for n1 in range(1,n_nodes)), GRB.GREATER_EQUAL, 1)
+# 
+# 
+# =============================================================================
+
 
 for k in range(n_vehicles):
-    model.addConstr(quicksum(x[n1,0,k] for n1 in range(1,n_nodes)), GRB.GREATER_EQUAL, 1)
+    model.addConstr(quicksum(x[n1,0,k] for n1 in range(1,n_nodes)), GRB.EQUAL, quicksum(x[0,n1,k] for n1 in range(1,n_nodes)))
+
 
 
 for k in range(n_vehicles):
@@ -108,11 +117,9 @@ for k in range(n_vehicles):
 #Subtour elimination
 
 
-# =============================================================================
-# for k in range(n_vehicles):
-#     model.addConstr(quicksum(x[i,j,k] for i in range(1,n_nodes) for j in range(1,n_nodes) if i != j), GRB.LESS_EQUAL, n_nodes -2)
-# 
-# =============================================================================
+for k in range(n_vehicles):
+    model.addConstr(quicksum(x[i,j,k] for i in range(1,n_nodes) for j in range(1,n_nodes) if i != j), GRB.LESS_EQUAL, n_nodes -2)
+
 #Capacity contraints
 
 

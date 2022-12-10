@@ -137,13 +137,13 @@ def retrieve_apts():
             lat_d = destination['lat'].values[0]
             lon_d = destination['lon'].values[0]
              
-            
-            route_dist = spherical_dist_rad(lat_o, lat_d, lon_o, lon_d, R=6367000)
+            #import pdb; pdb.set_trace()
+            route_dist = spherical_dist_rad(lat_o*np.pi/180, lat_d*np.pi/180, lon_o*np.pi/180, lon_d*np.pi/180, R=6367000)
             
             mat[apt1][apt2] = route_dist
     
     exp_df3 = pd.DataFrame(mat)
-    #exp_df3.to_csv('dist.csv')
+    exp_df3.to_csv('dist.csv')
     
 
     
