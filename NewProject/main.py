@@ -8,18 +8,22 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.io as pio
+import random
 pio.renderers.default = 'browser'
 
 
 #import data
 dist = pd.read_excel('nodes_loc.xlsx', sheet_name='dist', header=None) #distances between the nodes
 pos = pd.read_excel('nodes_loc.xlsx', sheet_name='loc')
-
+dem = pd.read_csv('demand.csv')
 
 
 #Define constants
 
-n_vehicles = 5 #number of trains
+n_vehicles = 15 #number of trains
+train_capacity = 350 # based of thalys
+
+#With this number a route should at most consit of 4 stops
 
 #Define lists
 
@@ -38,9 +42,12 @@ x = {}
 
 for n1 in range(n_nodes):
     for n2 in range(n_nodes):
+
         if n1 != n2:
-            for k in range(n_vehicles):
-                x[n1,n2,k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k))
+                for k in range(n_vehicles):
+
+                    x[n1,n2,k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #OLD
+                    
 
 model.update()
 #################
@@ -64,7 +71,7 @@ model.setObjective(obj,GRB.MINIMIZE)
 ### DEFINE CONSTRAINTS ###
 ###################
 
-#Amsterdam hub is node number 3
+#Amsterdam hub is node number 2
            
 #Each vehicle must leave the depot
 
@@ -72,15 +79,13 @@ model.setObjective(obj,GRB.MINIMIZE)
 #Each vehicle which leaves depot must return to the depot
 
 for k in range(n_vehicles):
-    model.addConstr(quicksum(x[n1,3,k] for n1 in range(n_nodes) if n1 != 3), GRB.EQUAL, quicksum(x[3,n1,k] for n1 in range(n_nodes) if n1 != 3))
+    model.addConstr(quicksum(x[n1,2,k] for n1 in range(n_nodes) if n1 != 2), GRB.EQUAL, 1, name = "N enter Depot")#quicksum(x[3,n1,k] for n1 in range(n_nodes) if n1 != 3), name = "Hub Leave Depot")
 
-# =============================================================================
-# 
-# for k in range(n_vehicles):
-#     model.addConstr(quicksum(x[3,n1,k] for n1 in range(n_nodes) if n1 != 3), GRB.GREATER_EQUAL, 1)
-# 
-# 
-# =============================================================================
+
+for k in range(n_vehicles):
+    model.addConstr(quicksum(x[2,n1,k] for n1 in range(n_nodes) if n1 != 2), GRB.EQUAL, 1, name = "N leave Depot")#quicksum(x[3,n1,k] for n1 in range(n_nodes) if n1 != 3), name = "Hub Leave Depot")
+
+
 #Remove case where vehicule only goes up and down
     
     
@@ -88,8 +93,10 @@ for k in range(n_vehicles):
     for i in range(n_nodes):
         for j in range(n_nodes):
             if i != j:
-                model.addConstr(x[i,j,k] + x[j,i,k], GRB.LESS_EQUAL, 1)
-    
+                model.addConstr(x[i,j,k] + x[j,i,k], GRB.LESS_EQUAL, 1, name = "No up and down")
+            for l in range(n_nodes):
+                if i != j and j != l and l != i and i != 2 and j!= 2 and l != 2:
+                    model.addConstr(x[2,i,k] + x[i,j,k] + x[j,l,k] + x[l,2,k], GRB.EQUAL, 4, name = "Three customers")
 
 
 
@@ -97,22 +104,63 @@ for k in range(n_vehicles):
 
 
 for n2 in range(n_nodes):
-    model.addConstr(quicksum(x[n1,n2,k] for k in range(n_vehicles) for n1 in range(n_nodes) if n1 != n2), GRB.EQUAL, 1)
+    if n2 != 2:
+        model.addConstr(quicksum(x[n1,n2,k] for k in range(n_vehicles) for n1 in range(n_nodes) if n1 != n2), GRB.GREATER_EQUAL, 1, name = "Visit Customer Once")
 
 
 
 #If a vehicle visits a customer, then the same vehicle must leave that customer
 for k in range(n_vehicles):
     for n1 in range(n_nodes):
-            model.addConstr(quicksum(x[n2,n1,k] for n2 in range(n_nodes) if n2 != n1), GRB.EQUAL, quicksum(x[n1,n2,k] for n2 in range(n_nodes) if n2 != n1))
-
-#Subtour elimination
+        model.addConstr(quicksum(x[n2,n1,k] for n2 in range(n_nodes) if n2 != n1), GRB.EQUAL, quicksum(x[n1,n2,k] for n2 in range(n_nodes) if n2 != n1), name = "Same Vehicule Leaves Customer")
 
 
-for k in range(n_vehicles):
-    model.addConstr(quicksum(x[i,j,k] for i in range(1,n_nodes) for j in range(1,n_nodes) if i != j), GRB.LESS_EQUAL, n_nodes -2)
 
 #Capacity contraints
+
+#Function does not work but was tried to set constraint considerin origin
+# =============================================================================
+# for idx in range(len(dem['origin_apt'])):
+#     destination = dem['destination_apt'][idx]
+#     origin = dem['origin_apt'][idx]
+#     demand = dem['freq'][idx] * dem['capacity'][idx]
+#     #import pdb ; pdb.set_trace()
+#     model.addConstr(quicksum(x[origin, destination,k] for k in range(n_vehicles))* train_capacity, GRB.GREATER_EQUAL, demand, name = 'Capacity')
+# 
+# 
+# =============================================================================
+
+for k in range(n_vehicles):
+    #import pdb ; pdb.set_trace()
+    model.addConstr(quicksum(dem['destination_apt'][n2] * x[n1,n2,k] for n1 in range(n_nodes) for n2 in range(n_nodes) if n2 != 2 and n1 != n2), GRB.LESS_EQUAL, train_capacity )
+
+#Subtour elimination -> ADD lazy constraints based on found subtours in optimal solution. Best to do this once capacity constraints has been added
+
+
+#Elimination of scandinavian subtour
+
+# =============================================================================
+# 
+# Nodes_ScSbT = [37, 42, 38, 40, 4, 16, 41]
+# 
+# for k in range(n_vehicles):
+#     model.addConstr(quicksum( x[n1,n2,k] for n1 in Nodes_ScSbT for n2 in Nodes_ScSbT if n1 != n2 ), GRB.EQUAL, len(Nodes_ScSbT)-1)
+# 
+# =============================================================================
+#Bellow Function does not work
+# =============================================================================
+# 
+# for k in range(n_vehicles):
+#     model.addConstr(quicksum(x[i,j,k] for i in range(1,n_nodes) for j in range(1,n_nodes) if i != j), GRB.LESS_EQUAL, n_nodes -2, name = "Subtour Elimination")
+# 
+# 
+# =============================================================================
+
+
+
+
+
+
 
 
 
@@ -130,6 +178,7 @@ for k in range(n_vehicles):
 
 model.update()
 model.write('model_formulation.lp')   
+model.setParam('TimeLimit', 1* 60)
 model.optimize()
 endTime   = time.time()
 
@@ -154,10 +203,20 @@ for n1 in range(n_nodes):
                     dlon_lst.append(pos['x'][n2])
 
 
+# =============================================================================
+# 
+# for c in model.getConstrs():
+#   if c.Slack > 1e-6:
+#     print('Constraint %s is active at solution point' % (c.ConstrName))
+# 
+# =============================================================================
 fig = go.Figure()
 source_to_dest = zip(slat_lst, dlat_lst, slon_lst, dlon_lst, nr_flights)
 
-color_lst = ['red','blue','green', 'cyan', 'yellow','grey']
+get_colors = lambda n: ["#%06x" % random.randint(0, 0xFFFFFF) for _ in range(n)]
+    
+
+color_lst = get_colors(n_vehicles)
 # Loop through each flight entry
 for slat, dlat, slon, dlon, num_flights in source_to_dest:
 
@@ -222,6 +281,4 @@ fig.show()
 # 
 # plt.show()
 # =============================================================================
-
-
 

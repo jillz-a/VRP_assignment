@@ -218,3 +218,10 @@ def retrieve_apts():
 # =============================================================================
 
 
+def capacity():
+    df = pd.read_csv('KLC_flightlist_20190901.csv')
+    dup_flights = df.pivot_table(columns=['origin_apt','destination_apt'], aggfunc='size')
+    dup_flights.to_csv('dup_flights.csv')
+    
+    
+    

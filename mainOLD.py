@@ -14,8 +14,11 @@ pos = pd.read_excel('nodes_loc.xlsx', sheet_name='loc')
 
 #Define constants
 
-n_vehicles = 4 #number of bagage vehicles
+n_vehicles = 1#number of bagage vehicles
 
+capacity = 100
+
+demand_node = 1
 #Define lists
 
 n_nodes = len(dist[0]) #number of nodes including central node 0
@@ -30,12 +33,15 @@ model = Model()
 #################
 
 x = {}
+u = {}
 
 for n1 in range(n_nodes):
+    u[n1] = model.addVar(vtype=GRB.INTEGER)
     for n2 in range(n_nodes):
         if n1 != n2:
             for k in range(n_vehicles):
                 x[n1,n2,k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k))
+                
 
 model.update()
 #################
@@ -62,34 +68,22 @@ model.setObjective(obj,GRB.MINIMIZE)
            
 #Each vehicle must leave the depot
 
-# =============================================================================
-# for k in range(n_vehicles):
-#     model.addConstr(quicksum(x[0,n2,k] for n2 in range(1,n_nodes)), GRB.EQUAL, 1)
-# 
-# 
-# #Each vehicle must return to the depot
-# 
-# for k in range(n_vehicles):
-#     model.addConstr(quicksum(x[n1,0,k] for n1 in range(1,n_nodes)), GRB.EQUAL, 1)
-# 
-# 
-# =============================================================================
 for k in range(n_vehicles):
-    model.addConstr(quicksum(x[0,n2,k] for n2 in range(1,n_nodes)), GRB.EQUAL, quicksum(x[n1,0,k] for n1 in range(1,n_nodes)))
+    model.addConstr(quicksum(x[0,n2,k] for n2 in range(1,n_nodes)), GRB.EQUAL, 1)
 
 
 #Each vehicle must return to the depot
-# =============================================================================
-# 
-# for k in range(n_vehicles):
-#     model.addConstr(quicksum(x[n1,0,k] for n1 in range(1,n_nodes)), GRB.GREATER_EQUAL, 1)
-# 
-# 
-# =============================================================================
-
 
 for k in range(n_vehicles):
-    model.addConstr(quicksum(x[n1,0,k] for n1 in range(1,n_nodes)), GRB.EQUAL, quicksum(x[0,n1,k] for n1 in range(1,n_nodes)))
+    model.addConstr(quicksum(x[n1,0,k] for n1 in range(1,n_nodes)), GRB.EQUAL, 1)
+
+
+# =============================================================================
+# 
+# 
+# for k in range(n_vehicles):
+#     model.addConstr(quicksum(x[n1,0,k] for n1 in range(1,n_nodes)), GRB.EQUAL, quicksum(x[0,n1,k] for n1 in range(1,n_nodes)))
+# =============================================================================
 
 
 
@@ -104,8 +98,8 @@ for k in range(n_vehicles):
 #Each customer must be visited by a vehicle
 
 
-for n2 in range(n_nodes):
-    model.addConstr(quicksum(x[n1,n2,k] for k in range(n_vehicles) for n1 in range(n_nodes) if n1 != n2), GRB.EQUAL, 1)
+for n2 in range(1,n_nodes):
+    model.addConstr(quicksum(x[n1,n2,k] for k in range(n_vehicles) for n1 in range(1,n_nodes) if n1 != n2), GRB.EQUAL, 1)
 
 
 
@@ -114,12 +108,26 @@ for k in range(n_vehicles):
     for n1 in range(n_nodes):
             model.addConstr(quicksum(x[n1,n2,k] for n2 in range(n_nodes) if n2 != n1), GRB.EQUAL, quicksum(x[n2,n1,k] for n2 in range(n_nodes) if n2 != n1))
 
+
+
 #Subtour elimination
+# =============================================================================
+# 
+# for i in range(1, n_nodes):
+#     model.addConstr(demand_node, GRB.LESS_EQUAL, u[i], GRB.LESS_EQUAL, capacity)
+#     for j in range(1,n_nodes):
+#         if i != j:
+#             model.addConstr(demand_node - capacity*(1-x[i,j,k]), GRB.GREATER_EQUAL,u[j] - u[i])
+#                 
+#                 
+# =============================================================================
 
-
-for k in range(n_vehicles):
-    model.addConstr(quicksum(x[i,j,k] for i in range(1,n_nodes) for j in range(1,n_nodes) if i != j), GRB.LESS_EQUAL, n_nodes -2)
-
+# =============================================================================
+# 
+# for k in range(n_vehicles):
+#     model.addConstr(quicksum(x[i,j,k] for i in range(1,n_nodes) for j in range(1,n_nodes) if i != j), GRB.LESS_EQUAL, n_nodes -2)
+# 
+# =============================================================================
 #Capacity contraints
 
 
@@ -165,3 +173,7 @@ for i in range(len(edges)):
 nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
 
 plt.show()
+
+for c in model.getConstrs():
+  if c.Slack > 1e-6:
+    print('Constraint %s is active at solution point' % (c.ConstrName))
