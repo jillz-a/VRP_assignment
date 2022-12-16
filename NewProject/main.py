@@ -48,17 +48,6 @@ for n1 in range(n_nodes):
                     #Here one can add use similar method to implement return to AMS with new return data Only thing is on should consider the contiutity at the final node
                 
 
-# =============================================================================
-# for n1 in range(n_nodes):
-#     for n2 in range(n_nodes):
-# 
-#         if n1 != n2:
-#                 for k in range(n_vehicles):
-#                     
-#                     #x[n1,n2,k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #OLD
-#                     
-# 
-# =============================================================================
 model.update()
 #################
 ### DEFINE OBJECTIVE FUNCTION ###
