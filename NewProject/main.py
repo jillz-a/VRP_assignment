@@ -20,7 +20,7 @@ dem = pd.read_csv('demand.csv')
 
 #Define constants
 
-n_vehicles = 15 #number of trains
+n_vehicles = 30 #number of trains
 train_capacity = 350 # based of thalys
 
 #With this number a route should at most consit of 4 stops
@@ -39,16 +39,25 @@ model = Model()
 #################
 
 x = {}
-
 for n1 in range(n_nodes):
     for n2 in range(n_nodes):
-
-        if n1 != n2:
+        for n3 in range(n_nodes):
+            if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2:
                 for k in range(n_vehicles):
+                    x[n1,n2,n3, k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #Is route from hub back to hub via n1, n2, and n3
+                
 
-                    x[n1,n2,k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #OLD
-                    
-
+# =============================================================================
+# for n1 in range(n_nodes):
+#     for n2 in range(n_nodes):
+# 
+#         if n1 != n2:
+#                 for k in range(n_vehicles):
+#                     
+#                     #x[n1,n2,k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #OLD
+#                     
+# 
+# =============================================================================
 model.update()
 #################
 ### DEFINE OBJECTIVE FUNCTION ###
@@ -59,10 +68,11 @@ obj = LinExpr()
 
 for n1 in range(n_nodes):
     for n2 in range(n_nodes):
-        if n1 != n2:
-            for k in range(n_vehicles):
-                obj += x[n1,n2,k] * dist[n1][n2]
-            
+        for n3 in range(n_nodes):
+            if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2:
+                for k in range(n_vehicles):
+                    obj += x[n1,n2,n3,k] * (dist[2][n1] + dist[n1][n2] + dist[n2][n3])
+                
 
 model.setObjective(obj,GRB.MINIMIZE)
  
@@ -76,45 +86,60 @@ model.setObjective(obj,GRB.MINIMIZE)
 #Each vehicle must leave the depot
 
 
-#Each vehicle which leaves depot must return to the depot
 
-for k in range(n_vehicles):
-    model.addConstr(quicksum(x[n1,2,k] for n1 in range(n_nodes) if n1 != 2), GRB.EQUAL, 1, name = "N enter Depot")#quicksum(x[3,n1,k] for n1 in range(n_nodes) if n1 != 3), name = "Hub Leave Depot")
-
-
-for k in range(n_vehicles):
-    model.addConstr(quicksum(x[2,n1,k] for n1 in range(n_nodes) if n1 != 2), GRB.EQUAL, 1, name = "N leave Depot")#quicksum(x[3,n1,k] for n1 in range(n_nodes) if n1 != 3), name = "Hub Leave Depot")
-
-
+# =============================================================================
+# 
+# #Each vehicle which leaves depot must return to the depot
+# 
+# for k in range(n_vehicles):
+#     model.addConstr(quicksum(x[n1,2,k] for n1 in range(n_nodes) if n1 != 2), GRB.EQUAL, 1, name = "N enter Depot")#quicksum(x[3,n1,k] for n1 in range(n_nodes) if n1 != 3), name = "Hub Leave Depot")
+# 
+# 
+# for k in range(n_vehicles):
+#     model.addConstr(quicksum(x[2,n1,k] for n1 in range(n_nodes) if n1 != 2), GRB.EQUAL, 1, name = "N leave Depot")#quicksum(x[3,n1,k] for n1 in range(n_nodes) if n1 != 3), name = "Hub Leave Depot")
+# 
+# 
+# =============================================================================
 #Remove case where vehicule only goes up and down
     
-    
+# =============================================================================
+#     
+# for k in range(n_vehicles):
+#     for i in range(n_nodes):
+#         for j in range(n_nodes):
+#             if i != j:
+#                 model.addConstr(x[i,j,k] + x[j,i,k], GRB.LESS_EQUAL, 1, name = "No up and down")
+#             for l in range(n_nodes):
+#                 if i != j and j != l and l != i and i != 2 and j!= 2 and l != 2:
+#                     model.addConstr(x[2,i,k] + x[i,j,k] + x[j,l,k] + x[l,2,k], GRB.EQUAL, 4, name = "Three customers")
+# 
+# 
+# =============================================================================
+
+#Each vehicle can only be used once
+
 for k in range(n_vehicles):
-    for i in range(n_nodes):
-        for j in range(n_nodes):
-            if i != j:
-                model.addConstr(x[i,j,k] + x[j,i,k], GRB.LESS_EQUAL, 1, name = "No up and down")
-            for l in range(n_nodes):
-                if i != j and j != l and l != i and i != 2 and j!= 2 and l != 2:
-                    model.addConstr(x[2,i,k] + x[i,j,k] + x[j,l,k] + x[l,2,k], GRB.EQUAL, 4, name = "Three customers")
-
-
+    model.addConstr(quicksum(x[n1,n2,n3,k] for n2 in range(n_nodes) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2 ), GRB.LESS_EQUAL, 1)
 
 #Each customer must be visited by a vehicle
 
 
 for n2 in range(n_nodes):
     if n2 != 2:
-        model.addConstr(quicksum(x[n1,n2,k] for k in range(n_vehicles) for n1 in range(n_nodes) if n1 != n2), GRB.GREATER_EQUAL, 1, name = "Visit Customer Once")
+        model.addConstr(quicksum(x[n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2)
+                        + quicksum(x[n2,n1,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2)
+                        + quicksum(x[n1,n3,n2, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.GREATER_EQUAL, 1, name = "Visit Customer Once")
 
-
-
-#If a vehicle visits a customer, then the same vehicle must leave that customer
-for k in range(n_vehicles):
-    for n1 in range(n_nodes):
-        model.addConstr(quicksum(x[n2,n1,k] for n2 in range(n_nodes) if n2 != n1), GRB.EQUAL, quicksum(x[n1,n2,k] for n2 in range(n_nodes) if n2 != n1), name = "Same Vehicule Leaves Customer")
-
-
+# =============================================================================
+# 
+# 
+# #If a vehicle visits a customer, then the same vehicle must leave that customer
+# for k in range(n_vehicles):
+#     for n1 in range(n_nodes):
+#         model.addConstr(quicksum(x[n2,n1,k] for n2 in range(n_nodes) if n2 != n1), GRB.EQUAL, quicksum(x[n1,n2,k] for n2 in range(n_nodes) if n2 != n1), name = "Same Vehicule Leaves Customer")
+# 
+# 
+# =============================================================================
 
 #Capacity contraints
 
@@ -129,11 +154,12 @@ for k in range(n_vehicles):
 # 
 # 
 # =============================================================================
-
-for k in range(n_vehicles):
-    #import pdb ; pdb.set_trace()
-    model.addConstr(quicksum(dem['destination_apt'][n2] * x[n1,n2,k] for n1 in range(n_nodes) for n2 in range(n_nodes) if n2 != 2 and n1 != n2), GRB.LESS_EQUAL, train_capacity )
-
+# =============================================================================
+# 
+# for k in range(n_vehicles):
+#         model.addConstr(quicksum(dem['destination_apt'][n2] * x[n1,n2,n3,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
+# 
+# =============================================================================
 #Subtour elimination -> ADD lazy constraints based on found subtours in optimal solution. Best to do this once capacity constraints has been added
 
 
@@ -190,17 +216,37 @@ dlat_lst = []
 dlon_lst = []
 nr_flights = []
 
+Sapt_df = pd.read_csv('airportsUnique.csv')
+
 for n1 in range(n_nodes):
     for n2 in range(n_nodes):
-        if n1 != n2:
-            for k in range(n_vehicles):
-                if x[n1,n2,k].X > 0:
-                    #import pdb;pdb.set_trace()
-                    nr_flights.append(k)
-                    slat_lst.append(pos['y'][n1])
-                    dlat_lst.append(pos['y'][n2])
-                    slon_lst.append(pos['x'][n1])
-                    dlon_lst.append(pos['x'][n2])
+        for n3 in range(n_nodes):
+            if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2:
+                for k in range(n_vehicles):
+                    if x[n1,n2, n3,k].X > 0:
+                        print(Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3],k,x[n1,n2,n3,k].X)
+                        #import pdb;pdb.set_trace()
+                        nr_flights.append(k)
+                        slat_lst.append(pos['y'][2])
+                        dlat_lst.append(pos['y'][n1])
+                        nr_flights.append(k)
+                        slat_lst.append(pos['y'][n1])
+                        dlat_lst.append(pos['y'][n2])   
+                        nr_flights.append(k)
+                        slat_lst.append(pos['y'][n2])
+                        dlat_lst.append(pos['y'][n3])
+                        #slat_lst.append(pos['y'][n3])
+                        #dlat_lst.append(pos['y'][2])
+                        
+                        
+                        slon_lst.append(pos['x'][2])
+                        dlon_lst.append(pos['x'][n1])
+                        slon_lst.append(pos['x'][n1])
+                        dlon_lst.append(pos['x'][n2])
+                        slon_lst.append(pos['x'][n2])
+                        dlon_lst.append(pos['x'][n3])
+                        #slon_lst.append(pos['x'][n3])
+                        #dlon_lst.append(pos['x'][2])
 
 
 # =============================================================================
@@ -233,7 +279,7 @@ fig.update_layout(title_text='Connection Map Depicting Flights for Airline Netwo
                   margin={"t": 0, "b": 0, "l": 0, "r": 0, "pad": 0},
                   showlegend=False,
                   geo=dict(showland=True, landcolor='white', countrycolor='grey', bgcolor="lightgrey", resolution=50))
-Sapt_df = pd.read_csv('airportsUnique.csv')
+
 
 airports = []
 airports_lon = []
