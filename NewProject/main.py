@@ -117,7 +117,7 @@ for k in range(n_vehicles):
 
 
 model.update()
-model.write('model_formulation.lp')   
+#model.write('model_formulation.lp')   
 model.setParam('TimeLimit', 1* 60)
 model.optimize()
 endTime   = time.time()
@@ -197,7 +197,7 @@ airports_lon = []
 airports_lat =[]
 
 for idx in range(len(Sapt_df['airport'])):
-    airports.append(Sapt_df['airport'][idx])
+    airports.append(Sapt_df['airport'][idx]+ '(nr.'+ str(idx) + ')')
     airports_lon.append(Sapt_df['lon'][idx])
     airports_lat.append(Sapt_df['lat'][idx])
 fig.add_trace(
