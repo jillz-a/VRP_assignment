@@ -20,8 +20,8 @@ dem = pd.read_csv('demand.csv')
 
 #Define constants
 
-n_vehicles = 35 #number of trains
-train_capacity = 500 #377 # based of thalys
+n_vehicles = 50 #number of trains
+train_capacity = 377 #377 # based of thalys
 
 #With this number a route should at most consit of 4 stops
 
@@ -45,6 +45,7 @@ for n1 in range(n_nodes):
             if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2:
                 for k in range(n_vehicles):
                     x[n1,n2,n3, k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #Is route from hub back to hub via n1, n2, and n3
+                    #Here one can add use similar method to implement return to AMS with new return data Only thing is on should consider the contiutity at the final node
                 
 
 # =============================================================================
@@ -115,12 +116,6 @@ for k in range(n_vehicles):
 
 
 
-#(backhauls)
-
-
-
-
-
 model.update()
 model.write('model_formulation.lp')   
 model.setParam('TimeLimit', 1* 60)
@@ -143,7 +138,7 @@ for n1 in range(n_nodes):
             if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2:
                 for k in range(n_vehicles):
                     if x[n1,n2, n3,k].X > 0:
-                        print(Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3],k,x[n1,n2,n3,k].X)
+                        print(Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3],k)
                         #import pdb;pdb.set_trace()
                         nr_flights.append(k)
                         slat_lst.append(pos['y'][2])
@@ -154,9 +149,7 @@ for n1 in range(n_nodes):
                         nr_flights.append(k)
                         slat_lst.append(pos['y'][n2])
                         dlat_lst.append(pos['y'][n3])
-                        #slat_lst.append(pos['y'][n3])
-                        #dlat_lst.append(pos['y'][2])
-                        
+
                         
                         slon_lst.append(pos['x'][2])
                         dlon_lst.append(pos['x'][n1])
@@ -164,8 +157,7 @@ for n1 in range(n_nodes):
                         dlon_lst.append(pos['x'][n2])
                         slon_lst.append(pos['x'][n2])
                         dlon_lst.append(pos['x'][n3])
-                        #slon_lst.append(pos['x'][n3])
-                        #dlon_lst.append(pos['x'][2])
+
 
 
 # =============================================================================
@@ -220,30 +212,4 @@ fig.add_trace(
 
 fig.show()
 
-
-# =============================================================================
-# G = nx.DiGraph()
-# 
-# for node in range(n_nodes):
-#     G.add_node(node, pos = (pos['x'][node], pos['y'][node]))
-# 
-# for n1 in range(n_nodes):
-#     for n2 in range(n_nodes):
-#         if n1 != n2:
-#             for k in range(n_vehicles):
-#                 if x[(n1,n2,k)].X == 1:
-#                     G.add_edge(n1,n2, arrowstyle = "->")
-# 
-# pos=nx.get_node_attributes(G,'pos')
-# nx.draw(G, pos, with_labels= True)
-# 
-# edges = [(n1,n2) for n1,n2 in G.edges]
-# edge_labels = {}
-# for i in range(len(edges)):
-#     edge_labels[edges[i]] = i
-# 
-# nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
-# 
-# plt.show()
-# =============================================================================
 
