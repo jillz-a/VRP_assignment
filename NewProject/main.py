@@ -20,8 +20,8 @@ dem = pd.read_csv('demand.csv')
 
 #Define constants
 
-n_vehicles = 30 #number of trains
-train_capacity = 350 # based of thalys
+n_vehicles = 35 #number of trains
+train_capacity = 500 #377 # based of thalys
 
 #With this number a route should at most consit of 4 stops
 
@@ -83,39 +83,7 @@ model.setObjective(obj,GRB.MINIMIZE)
 
 #Amsterdam hub is node number 2
            
-#Each vehicle must leave the depot
-
-
-
-# =============================================================================
-# 
-# #Each vehicle which leaves depot must return to the depot
-# 
-# for k in range(n_vehicles):
-#     model.addConstr(quicksum(x[n1,2,k] for n1 in range(n_nodes) if n1 != 2), GRB.EQUAL, 1, name = "N enter Depot")#quicksum(x[3,n1,k] for n1 in range(n_nodes) if n1 != 3), name = "Hub Leave Depot")
-# 
-# 
-# for k in range(n_vehicles):
-#     model.addConstr(quicksum(x[2,n1,k] for n1 in range(n_nodes) if n1 != 2), GRB.EQUAL, 1, name = "N leave Depot")#quicksum(x[3,n1,k] for n1 in range(n_nodes) if n1 != 3), name = "Hub Leave Depot")
-# 
-# 
-# =============================================================================
-#Remove case where vehicule only goes up and down
-    
-# =============================================================================
-#     
-# for k in range(n_vehicles):
-#     for i in range(n_nodes):
-#         for j in range(n_nodes):
-#             if i != j:
-#                 model.addConstr(x[i,j,k] + x[j,i,k], GRB.LESS_EQUAL, 1, name = "No up and down")
-#             for l in range(n_nodes):
-#                 if i != j and j != l and l != i and i != 2 and j!= 2 and l != 2:
-#                     model.addConstr(x[2,i,k] + x[i,j,k] + x[j,l,k] + x[l,2,k], GRB.EQUAL, 4, name = "Three customers")
-# 
-# 
-# =============================================================================
-
+#
 #Each vehicle can only be used once
 
 for k in range(n_vehicles):
@@ -130,68 +98,19 @@ for n2 in range(n_nodes):
                         + quicksum(x[n2,n1,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2)
                         + quicksum(x[n1,n3,n2, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.GREATER_EQUAL, 1, name = "Visit Customer Once")
 
-# =============================================================================
-# 
-# 
-# #If a vehicle visits a customer, then the same vehicle must leave that customer
-# for k in range(n_vehicles):
-#     for n1 in range(n_nodes):
-#         model.addConstr(quicksum(x[n2,n1,k] for n2 in range(n_nodes) if n2 != n1), GRB.EQUAL, quicksum(x[n1,n2,k] for n2 in range(n_nodes) if n2 != n1), name = "Same Vehicule Leaves Customer")
-# 
-# 
-# =============================================================================
 
 #Capacity contraints
 
-#Function does not work but was tried to set constraint considerin origin
-# =============================================================================
-# for idx in range(len(dem['origin_apt'])):
-#     destination = dem['destination_apt'][idx]
-#     origin = dem['origin_apt'][idx]
-#     demand = dem['freq'][idx] * dem['capacity'][idx]
-#     #import pdb ; pdb.set_trace()
-#     model.addConstr(quicksum(x[origin, destination,k] for k in range(n_vehicles))* train_capacity, GRB.GREATER_EQUAL, demand, name = 'Capacity')
-# 
-# 
-# =============================================================================
-# =============================================================================
-# 
-# for k in range(n_vehicles):
-#         model.addConstr(quicksum(dem['destination_apt'][n2] * x[n1,n2,n3,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
-# 
-# =============================================================================
-#Subtour elimination -> ADD lazy constraints based on found subtours in optimal solution. Best to do this once capacity constraints has been added
 
 
-#Elimination of scandinavian subtour
-
-# =============================================================================
-# 
-# Nodes_ScSbT = [37, 42, 38, 40, 4, 16, 41]
-# 
-# for k in range(n_vehicles):
-#     model.addConstr(quicksum( x[n1,n2,k] for n1 in Nodes_ScSbT for n2 in Nodes_ScSbT if n1 != n2 ), GRB.EQUAL, len(Nodes_ScSbT)-1)
-# 
-# =============================================================================
-#Bellow Function does not work
-# =============================================================================
-# 
-# for k in range(n_vehicles):
-#     model.addConstr(quicksum(x[i,j,k] for i in range(1,n_nodes) for j in range(1,n_nodes) if i != j), GRB.LESS_EQUAL, n_nodes -2, name = "Subtour Elimination")
-# 
-# 
-# =============================================================================
+for k in range(n_vehicles):
+        model.addConstr(quicksum((dem['capacity'][n1] * dem['freq'][n1]+ dem['capacity'][n2] * dem['freq'][n2] + dem['freq'][n3]*dem['capacity'][n3]) * x[n1,n2,n3,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
 
 
 
 
 
 
-
-
-
-
-#Time Window constraints
 
 
 
