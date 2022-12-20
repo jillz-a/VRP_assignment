@@ -49,7 +49,7 @@ for n1 in range(n_nodes):
                     
                     #Important to note that there is not the same amount of flights leaving and returning to AMS
                 
-
+                    #Could consider that instead of serving 3 nodes 4 nodes are used as this would be the theoretical maximum amount of nodes which could be served by a full train of 377 seats serving 4 nodes of 88 demand
 model.update()
 #################
 ### DEFINE OBJECTIVE FUNCTION ###
@@ -81,6 +81,7 @@ model.setObjective(obj,GRB.MINIMIZE)
 for k in range(n_vehicles):
     model.addConstr(quicksum(x[w,n1,n2,n3,k] for w in range(2) for n2 in range(n_nodes) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2 ), GRB.LESS_EQUAL, 1)
 
+print('Set constraint of using vehicle at most once', time.time())
 #Each customer must be visited by a vehicle
 
 
@@ -90,7 +91,7 @@ for n2 in range(n_nodes):
                         + quicksum(x[w,n2,n1,n3, k] for w in range(2) for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2)
                         + quicksum(x[w,n1,n3,n2, k] for w in range(2) for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.GREATER_EQUAL, 1, name = "Visit Customer Once")
 
-
+print('Set constraint of each customer visited once', time.time())
 #Capacity contraints for outgoing flights
 
 
@@ -98,7 +99,7 @@ for n2 in range(n_nodes):
 for k in range(n_vehicles):
         model.addConstr(quicksum((dem['capacity'][n1] * dem['freq'][n1]+ dem['capacity'][n2] * dem['freq'][n2] + dem['freq'][n3]*dem['capacity'][n3]) * x[1,n1,n2,n3,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
 
-
+print('Set constraint of outgoing flight capacity', time.time())
 #Capacity contraints for returning flights
 
 
@@ -107,6 +108,7 @@ for k in range(n_vehicles):
         model.addConstr(quicksum((Retdem['capacity'][n1] * Retdem['freq'][n1]+ Retdem['capacity'][n2] * Retdem['freq'][n2] + Retdem['freq'][n3]*dem['capacity'][n3]) * x[0,n3,n2,n1,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
 
 
+print('Set constraint of returning flight capacity', time.time())
 
 #Vehile arriving at node 3 from an outgoing leg is also used for a returning leg
 
@@ -114,10 +116,10 @@ for k in range(n_vehicles):
 
 for n3 in range(n_nodes):
     for k in range(n_vehicles):
-        if n2 != 2:
+        if n3 != 2:
             model.addConstr(quicksum(x[1,n1,n2,n3, k]  for n1 in range(n_nodes) for n2 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.EQUAL, quicksum(x[0,n3,n2,n1, k]  for n1 in range(n_nodes) for n2 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), name = "Enter Node Leave Node")
     
-
+print('set constraint of same vehicle being used', time.time())
 
 
 
