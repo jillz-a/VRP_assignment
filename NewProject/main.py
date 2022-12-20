@@ -148,7 +148,7 @@ Sapt_df = pd.read_csv('ModelData/airportsUnique.csv')
 for n1 in range(n_nodes):
     for n2 in range(n_nodes):
         for n3 in range(n_nodes):
-            if  n2 != 2 and n3 !=2: # and n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2:
+            if  n1 != 2 and n2 != 2 and n3 !=2: # and n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2:
                 for k in range(n_vehicles):
                     if x[1,n1,n2, n3,k].X > 0:
                         print('Outgoing',Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3],k)
