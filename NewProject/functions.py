@@ -43,8 +43,8 @@ def spherical_dist_rad(phi1, phi2, lambda1, lambda2, R=6367000):
 
 def retrieve_apts():
     
-    df_apts = pd.read_csv('airports.csv')
-    df = pd.read_csv('KLC_flightlist_20190901.csv')
+    df_apts = pd.read_csv('FunctionData/airports.csv')
+    df = pd.read_csv('FunctionData/KLC_flightlist_20190901.csv')
     #df_apts.loc[df['iata'] == 'AMS']
     route_lst = []
     origin_lst = []
@@ -119,7 +119,7 @@ def retrieve_apts():
     #d2 = {'airport' : unique_lst, 'lat': pos_lat1, 'lon': pos_lon1}
     d2 = {'x': pos_lon1, 'y': pos_lat1}
     exp_df2 = pd.DataFrame(data=d2)
-    exp_df2.to_csv('nodes_loc.csv')
+    exp_df2.to_csv('FunctionData/nodes_loc.csv')
     
     
     mat = np.zeros((len(unique_lst),len(unique_lst)))
@@ -143,7 +143,7 @@ def retrieve_apts():
             mat[apt1][apt2] = route_dist
     
     exp_df3 = pd.DataFrame(mat)
-    exp_df3.to_csv('dist.csv')
+    exp_df3.to_csv('FunctionData/dist.csv')
     
 
     
@@ -219,9 +219,9 @@ def retrieve_apts():
 
 
 def capacity():
-    df = pd.read_csv('KLC_flightlist_20190901.csv')
+    df = pd.read_csv('FunctionData/KLC_flightlist_20190901.csv')
     dup_flights = df.pivot_table(columns=['origin_apt','destination_apt', 'typecode'], aggfunc='size')
-    dup_flights.to_csv('dup_flights.csv')
+    dup_flights.to_csv('FunctionData/dup_flights.csv')
     
     
     

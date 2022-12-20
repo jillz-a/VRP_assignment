@@ -13,10 +13,10 @@ pio.renderers.default = 'browser'
 
 
 #import data
-dist = pd.read_excel('nodes_loc.xlsx', sheet_name='dist', header=None) #distances between the nodes
-pos = pd.read_excel('nodes_loc.xlsx', sheet_name='loc')
-dem = pd.read_csv('demand.csv')
-
+dist = pd.read_excel('ModelData/nodes_loc.xlsx', sheet_name='dist', header=None) #distances between the nodes
+pos = pd.read_excel('ModelData/nodes_loc.xlsx', sheet_name='loc')
+dem = pd.read_csv('ModelData/demand.csv')
+Retdem = pd.read_csv('ModelData/demandReturn.csv')
 
 #Define constants
 
@@ -44,8 +44,10 @@ for n1 in range(n_nodes):
         for n3 in range(n_nodes):
             if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2:
                 for k in range(n_vehicles):
-                    x[n1,n2,n3, k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #Is route from hub back to hub via n1, n2, and n3
-                    #Here one can add use similar method to implement return to AMS with new return data Only thing is on should consider the contiutity at the final node
+                    x[1,n1,n2,n3, k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #Is route from hub  via n1, n2, and n3 ie. Outgoing flights
+                    x[0,n3,n2,n1, k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #Is route to hub back to hub via n1, n2, and n3 ie. Returning flights
+                    
+                    #Important to note that there is not the same amount of flights leaving and returning to AMS
                 
 
 model.update()
@@ -61,8 +63,8 @@ for n1 in range(n_nodes):
         for n3 in range(n_nodes):
             if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2:
                 for k in range(n_vehicles):
-                    obj += x[n1,n2,n3,k] * (dist[2][n1] + dist[n1][n2] + dist[n2][n3])
-                
+                    obj += x[1,n1,n2,n3,k] * (dist[2][n1] + dist[n1][n2] + dist[n2][n3])
+                    obj += x[0,n3,n2,n1,k] * (dist[n3][n2] + dist[n2][n1] + dist[n1][2])
 
 model.setObjective(obj,GRB.MINIMIZE)
  
@@ -73,33 +75,48 @@ model.setObjective(obj,GRB.MINIMIZE)
 
 #Amsterdam hub is node number 2
            
-#
-#Each vehicle can only be used once
+
+#Each vehicle can only be used once for the outgoing legs
 
 for k in range(n_vehicles):
-    model.addConstr(quicksum(x[n1,n2,n3,k] for n2 in range(n_nodes) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2 ), GRB.LESS_EQUAL, 1)
+    model.addConstr(quicksum(x[w,n1,n2,n3,k] for w in range(2) for n2 in range(n_nodes) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2 ), GRB.LESS_EQUAL, 1)
 
 #Each customer must be visited by a vehicle
 
 
 for n2 in range(n_nodes):
     if n2 != 2:
-        model.addConstr(quicksum(x[n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2)
-                        + quicksum(x[n2,n1,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2)
-                        + quicksum(x[n1,n3,n2, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.GREATER_EQUAL, 1, name = "Visit Customer Once")
+        model.addConstr(quicksum(x[w,n1,n2,n3, k] for w in range(2) for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2)
+                        + quicksum(x[w,n2,n1,n3, k] for w in range(2) for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2)
+                        + quicksum(x[w,n1,n3,n2, k] for w in range(2) for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.GREATER_EQUAL, 1, name = "Visit Customer Once")
 
 
-#Capacity contraints
+#Capacity contraints for outgoing flights
 
 
 
 for k in range(n_vehicles):
-        model.addConstr(quicksum((dem['capacity'][n1] * dem['freq'][n1]+ dem['capacity'][n2] * dem['freq'][n2] + dem['freq'][n3]*dem['capacity'][n3]) * x[n1,n2,n3,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
+        model.addConstr(quicksum((dem['capacity'][n1] * dem['freq'][n1]+ dem['capacity'][n2] * dem['freq'][n2] + dem['freq'][n3]*dem['capacity'][n3]) * x[1,n1,n2,n3,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
+
+
+#Capacity contraints for returning flights
 
 
 
+for k in range(n_vehicles):
+        model.addConstr(quicksum((Retdem['capacity'][n1] * Retdem['freq'][n1]+ Retdem['capacity'][n2] * Retdem['freq'][n2] + Retdem['freq'][n3]*dem['capacity'][n3]) * x[0,n3,n2,n1,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
 
 
+
+#Vehile arriving at node 3 from an outgoing leg is also used for a returning leg
+
+
+
+for n3 in range(n_nodes):
+    for k in range(n_vehicles):
+        if n2 != 2:
+            model.addConstr(quicksum(x[1,n1,n2,n3, k]  for n1 in range(n_nodes) for n2 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.EQUAL, quicksum(x[0,n3,n2,n1, k]  for n1 in range(n_nodes) for n2 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), name = "Enter Node Leave Node")
+    
 
 
 
@@ -107,7 +124,7 @@ for k in range(n_vehicles):
 
 model.update()
 #model.write('model_formulation.lp')   
-model.setParam('TimeLimit', 1* 60)
+model.setParam('TimeLimit', 10* 60)
 model.optimize()
 endTime   = time.time()
 
@@ -119,15 +136,15 @@ dlat_lst = []
 dlon_lst = []
 nr_flights = []
 
-Sapt_df = pd.read_csv('airportsUnique.csv')
+Sapt_df = pd.read_csv('ModelData/airportsUnique.csv')
 
 for n1 in range(n_nodes):
     for n2 in range(n_nodes):
         for n3 in range(n_nodes):
             if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2:
                 for k in range(n_vehicles):
-                    if x[n1,n2, n3,k].X > 0:
-                        print(Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3],k)
+                    if x[1,n1,n2, n3,k].X > 0:
+                        print('Outgoing',Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3],k)
                         #import pdb;pdb.set_trace()
                         nr_flights.append(k)
                         slat_lst.append(pos['y'][2])
@@ -147,6 +164,27 @@ for n1 in range(n_nodes):
                         slon_lst.append(pos['x'][n2])
                         dlon_lst.append(pos['x'][n3])
 
+
+                    if x[0,n3,n2, n1,k].X > 0:
+                        print('Return', Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3],k)
+                        #import pdb;pdb.set_trace()
+                        nr_flights.append(k)
+                        slat_lst.append(pos['y'][n3])
+                        dlat_lst.append(pos['y'][n2])
+                        nr_flights.append(k)
+                        slat_lst.append(pos['y'][n2])
+                        dlat_lst.append(pos['y'][n1])   
+                        nr_flights.append(k)
+                        slat_lst.append(pos['y'][n1])
+                        dlat_lst.append(pos['y'][2])
+
+                        
+                        slon_lst.append(pos['x'][n3])
+                        dlon_lst.append(pos['x'][n2])
+                        slon_lst.append(pos['x'][n2])
+                        dlon_lst.append(pos['x'][n1])
+                        slon_lst.append(pos['x'][n1])
+                        dlon_lst.append(pos['x'][2])
 
 
 # =============================================================================
@@ -186,7 +224,7 @@ airports_lon = []
 airports_lat =[]
 
 for idx in range(len(Sapt_df['airport'])):
-    airports.append(Sapt_df['airport'][idx]+ '(nr.'+ str(idx) + ')')
+    airports.append(Sapt_df['airport'][idx])#+ '(nr.'+ str(idx) + ')')
     airports_lon.append(Sapt_df['lon'][idx])
     airports_lat.append(Sapt_df['lat'][idx])
 fig.add_trace(
