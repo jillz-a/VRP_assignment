@@ -42,7 +42,7 @@ x = {}
 for n1 in range(n_nodes):
     for n2 in range(n_nodes):
         for n3 in range(n_nodes):
-            if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2:
+            if n1 != 2 and n2 != 2 and n3 !=2: #n1 != n2 and n2 != n3 and n3 != n1 and
                 for k in range(n_vehicles):
                     x[1,n1,n2,n3, k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #Is route from hub  via n1, n2, and n3 ie. Outgoing flights
                     x[0,n3,n2,n1, k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #Is route to hub back to hub via n1, n2, and n3 ie. Returning flights
@@ -51,6 +51,8 @@ for n1 in range(n_nodes):
                 
                     #Could consider that instead of serving 3 nodes 4 nodes are used as this would be the theoretical maximum amount of nodes which could be served by a full train of 377 seats serving 4 nodes of 88 demand
 model.update()
+
+print('Defined all variables', time.time())
 #################
 ### DEFINE OBJECTIVE FUNCTION ###
 #################
@@ -61,13 +63,14 @@ obj = LinExpr()
 for n1 in range(n_nodes):
     for n2 in range(n_nodes):
         for n3 in range(n_nodes):
-            if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2:
+            if  n1 != 2 and n2 != 2 and n3 !=2: #n1 != n2 and n2 != n3 and n3 != n1:
                 for k in range(n_vehicles):
                     obj += x[1,n1,n2,n3,k] * (dist[2][n1] + dist[n1][n2] + dist[n2][n3])
                     obj += x[0,n3,n2,n1,k] * (dist[n3][n2] + dist[n2][n1] + dist[n1][2])
 
 model.setObjective(obj,GRB.MINIMIZE)
- 
+
+print('Objective function set', time.time())
 
 ###################
 ### DEFINE CONSTRAINTS ###
@@ -79,7 +82,7 @@ model.setObjective(obj,GRB.MINIMIZE)
 #Each vehicle can only be used once for the outgoing legs
 
 for k in range(n_vehicles):
-    model.addConstr(quicksum(x[w,n1,n2,n3,k] for w in range(2) for n2 in range(n_nodes) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2 ), GRB.LESS_EQUAL, 1)
+    model.addConstr(quicksum(x[w,n1,n2,n3,k] for w in range(2) for n2 in range(n_nodes) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2 ), GRB.LESS_EQUAL, 1)
 
 print('Set constraint of using vehicle at most once', time.time())
 #Each customer must be visited by a vehicle
@@ -87,9 +90,9 @@ print('Set constraint of using vehicle at most once', time.time())
 
 for n2 in range(n_nodes):
     if n2 != 2:
-        model.addConstr(quicksum(x[w,n1,n2,n3, k] for w in range(2) for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2)
-                        + quicksum(x[w,n2,n1,n3, k] for w in range(2) for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2)
-                        + quicksum(x[w,n1,n3,n2, k] for w in range(2) for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.GREATER_EQUAL, 1, name = "Visit Customer Once")
+        model.addConstr(quicksum(x[w,n1,n2,n3, k] for w in range(2) for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2)
+                        + quicksum(x[w,n2,n1,n3, k] for w in range(2) for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if  n1 != 2 and n2 != 2 and n3 !=2)
+                        + quicksum(x[w,n1,n3,n2, k] for w in range(2) for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if  n1 != 2 and n2 != 2 and n3 !=2), GRB.GREATER_EQUAL, 1, name = "Visit Customer Once")
 
 print('Set constraint of each customer visited once', time.time())
 #Capacity contraints for outgoing flights
@@ -97,7 +100,7 @@ print('Set constraint of each customer visited once', time.time())
 
 
 for k in range(n_vehicles):
-        model.addConstr(quicksum((dem['capacity'][n1] * dem['freq'][n1]+ dem['capacity'][n2] * dem['freq'][n2] + dem['freq'][n3]*dem['capacity'][n3]) * x[1,n1,n2,n3,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
+        model.addConstr(quicksum((dem['capacity'][n1] * dem['freq'][n1]+ dem['capacity'][n2] * dem['freq'][n2] + dem['freq'][n3]*dem['capacity'][n3]) * x[1,n1,n2,n3,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
 
 print('Set constraint of outgoing flight capacity', time.time())
 #Capacity contraints for returning flights
@@ -105,23 +108,25 @@ print('Set constraint of outgoing flight capacity', time.time())
 
 
 for k in range(n_vehicles):
-        model.addConstr(quicksum((Retdem['capacity'][n1] * Retdem['freq'][n1]+ Retdem['capacity'][n2] * Retdem['freq'][n2] + Retdem['freq'][n3]*dem['capacity'][n3]) * x[0,n3,n2,n1,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
+        model.addConstr(quicksum((Retdem['capacity'][n1] * Retdem['freq'][n1]+ Retdem['capacity'][n2] * Retdem['freq'][n2] + Retdem['freq'][n3]*dem['capacity'][n3]) * x[0,n3,n2,n1,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
 
 
 print('Set constraint of returning flight capacity', time.time())
 
 #Vehile arriving at node 3 from an outgoing leg is also used for a returning leg
 
-
-
-for n3 in range(n_nodes):
-    for k in range(n_vehicles):
-        if n3 != 2:
-            model.addConstr(quicksum(x[1,n1,n2,n3, k]  for n1 in range(n_nodes) for n2 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), GRB.EQUAL, quicksum(x[0,n3,n2,n1, k]  for n1 in range(n_nodes) for n2 in range(n_nodes) if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2), name = "Enter Node Leave Node")
-    
-print('set constraint of same vehicle being used', time.time())
-
-
+# =============================================================================
+# 
+# 
+# for n3 in range(n_nodes):
+#     for k in range(n_vehicles):
+#         if n3 != 2:
+#             model.addConstr(quicksum(x[1,n1,n2,n3, k]  for n1 in range(n_nodes) for n2 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2), GRB.EQUAL, quicksum(x[0,n3,n2,n1, k]  for n1 in range(n_nodes) for n2 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2), name = "Enter Node Leave Node")
+#     
+# print('set constraint of same vehicle being used', time.time())
+# 
+# 
+# =============================================================================
 
 
 model.update()
@@ -143,7 +148,7 @@ Sapt_df = pd.read_csv('ModelData/airportsUnique.csv')
 for n1 in range(n_nodes):
     for n2 in range(n_nodes):
         for n3 in range(n_nodes):
-            if n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2 and n2 != 2 and n3 !=2:
+            if  n2 != 2 and n3 !=2: # and n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2:
                 for k in range(n_vehicles):
                     if x[1,n1,n2, n3,k].X > 0:
                         print('Outgoing',Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3],k)
