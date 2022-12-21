@@ -82,7 +82,7 @@ print('Objective function set', time.time())
 
 
 for k in range(n_vehicles):
-    #Each vehicle can only be used once for the outgoing legs
+    #Each vehicle can only be used once for the outgoing legs. Return is implicity done in combination with the vehicle contunuity constraint
     model.addConstr(quicksum(x[1,n1,n2,n3,k] for n2 in range(n_nodes) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2 ), GRB.LESS_EQUAL, 1)
 
     #Capacity contraints for returning flights
@@ -120,6 +120,8 @@ for n3 in range(n_nodes):
     
 print('Set all constraints', time.time())
 
+
+#Geographical constraints for trains towards Scandinavia and the UK
 
 
 
