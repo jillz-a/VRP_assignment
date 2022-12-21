@@ -124,6 +124,11 @@ print('Set all constraints', time.time())
 #Geographical constraints for trains towards Scandinavia and the UK
 
 
+UK_nodes = [14,31,25,36,28,29,9,13] #Entry through node 12 from 24
+
+Scan_nodes = [41,16,4,40,38,37,42,21,45] # Entry through node 28 or 29 from 10
+
+
 
 model.update()
 #model.write('model_formulation.lp')   
@@ -235,7 +240,7 @@ airports_lon = []
 airports_lat =[]
 
 for idx in range(len(Sapt_df['airport'])):
-    airports.append(Sapt_df['airport'][idx])#+ '(nr.'+ str(idx) + ')')
+    airports.append(str(idx))#Sapt_df['airport'][idx])#+ '(nr.'+ str(idx) + ')')
     airports_lon.append(Sapt_df['lon'][idx])
     airports_lat.append(Sapt_df['lat'][idx])
 fig.add_trace(
