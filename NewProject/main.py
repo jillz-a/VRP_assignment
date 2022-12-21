@@ -52,7 +52,7 @@ for n1 in range(n_nodes):
                     #Could consider that instead of serving 3 nodes 4 nodes are used as this would be the theoretical maximum amount of nodes which could be served by a full train of 377 seats serving 4 nodes of 88 demand
 model.update()
 
-print('Defined all variables', time.time())
+print('Defined all variables', time.time() - startTimeSetUp)
 #################
 ### DEFINE OBJECTIVE FUNCTION ###
 #################
@@ -70,7 +70,7 @@ for n1 in range(n_nodes):
 
 model.setObjective(obj,GRB.MINIMIZE)
 
-print('Objective function set', time.time())
+print('Objective function set', time.time() - startTimeSetUp)
 
 ###################
 ### DEFINE CONSTRAINTS ###
@@ -118,16 +118,37 @@ for n3 in range(n_nodes):
         if n3 != 2:
             model.addConstr(quicksum(x[1,n1,n2,n3, k]  for n1 in range(n_nodes) for n2 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2), GRB.EQUAL, quicksum(x[0,n3,n2,n1, k]  for n1 in range(n_nodes) for n2 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2), name = "Enter Node Leave Node")
     
-print('Set all constraints', time.time())
+print('Set all constraints', time.time() - startTimeSetUp)
 
 
 #Geographical constraints for trains towards Scandinavia and the UK
 
 
-UK_nodes = [14,31,25,36,28,29,9,13] #Entry through node 12 from 24
+UK_nodes = [14,31,25,36,28,29,9,13] # Entry through node 28 or 29 from 10
 
-Scan_nodes = [41,16,4,40,38,37,42,21,45] # Entry through node 28 or 29 from 10
 
+Scan_nodes = [4,16,41,40,38,37,42,21,45, 12] #Entry through node 12 from 24
+
+
+#Segments combining Scandinavian nodes with other nodes are not possible
+for n in range(n_nodes):
+    if n not in Scan_nodes:
+        if n != 24 and n != 2: #Entry Node
+        
+            #One node outside the subset, two in inside        
+            model.addConstr(quicksum(x[w,n,n2,n3, k] for w in range(2) for k in range(n_vehicles) for n2 in Scan_nodes for n3 in Scan_nodes)
+                        + quicksum(x[w,n2,n,n3, k] for w in range(2) for k in range(n_vehicles) for n2 in Scan_nodes for n3 in Scan_nodes)
+                        + quicksum(x[w,n2,n3,n, k]  for w in range(2) for k in range(n_vehicles) for n2 in Scan_nodes for n3 in Scan_nodes), GRB.EQUAL, 0, name = "Scan constraint")
+            
+            #Two outside one inside
+            model.addConstr(quicksum(x[w,n,n2,n3, k] for w in range(2) for k in range(n_vehicles) for n2 in range(n_nodes) for n3 in Scan_nodes if n2 !=  24 and n2 != 2)
+                        + quicksum(x[w,n3,n,n2, k] for w in range(2) for k in range(n_vehicles) for n2 in range(n_nodes) for n3 in Scan_nodes if n2 !=  24 and n2 != 2)
+                        + quicksum(x[w,n2,n3,n, k]  for w in range(2) for k in range(n_vehicles) for n2 in range(n_nodes) for n3 in Scan_nodes if n2 !=  24 and n2 != 2), GRB.EQUAL, 0, name = "Scan constraint")
+        
+     
+
+#Nodes in scandinativan domain can only be entered via node 12 (Copenhagen)
+model.addConstr(quicksum(x[w,n1,n2,n3, k] for w in range(2) for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in Scan_nodes if n1 != 12 ),GRB.EQUAL, 0, name =  "Entry Node")
 
 
 model.update()
@@ -178,31 +199,33 @@ for n1 in range(n_nodes):
                         dlon_lst.append(pos['x'][n3])
 
 
-                    if x[0,n3,n2, n1,k].X > 0:
-                        print('Return', Sapt_df['airport'][n3],Sapt_df['airport'][n2], Sapt_df['airport'][n1],k)
-                        #import pdb;pdb.set_trace()
-                        nr_flights.append(k)
-                        color_lst.append('blue')
-                        slat_lst.append(pos['y'][n3])
-                        dlat_lst.append(pos['y'][n2])
-                        nr_flights.append(k)
-                        color_lst.append('blue')
-                        slat_lst.append(pos['y'][n2])
-                        dlat_lst.append(pos['y'][n1])   
-                        nr_flights.append(k)
-                        color_lst.append('blue')
-                        slat_lst.append(pos['y'][n1])
-                        dlat_lst.append(pos['y'][2])
-
-                        
-                        slon_lst.append(pos['x'][n3])
-                        dlon_lst.append(pos['x'][n2])
-                        slon_lst.append(pos['x'][n2])
-                        dlon_lst.append(pos['x'][n1])
-                        slon_lst.append(pos['x'][n1])
-                        dlon_lst.append(pos['x'][2])
-
-
+# =============================================================================
+#                     if x[0,n3,n2, n1,k].X > 0:
+#                         print('Return', Sapt_df['airport'][n3],Sapt_df['airport'][n2], Sapt_df['airport'][n1],k)
+#                         #import pdb;pdb.set_trace()
+#                         nr_flights.append(k)
+#                         color_lst.append('blue')
+#                         slat_lst.append(pos['y'][n3])
+#                         dlat_lst.append(pos['y'][n2])
+#                         nr_flights.append(k)
+#                         color_lst.append('blue')
+#                         slat_lst.append(pos['y'][n2])
+#                         dlat_lst.append(pos['y'][n1])   
+#                         nr_flights.append(k)
+#                         color_lst.append('blue')
+#                         slat_lst.append(pos['y'][n1])
+#                         dlat_lst.append(pos['y'][2])
+# 
+#                         
+#                         slon_lst.append(pos['x'][n3])
+#                         dlon_lst.append(pos['x'][n2])
+#                         slon_lst.append(pos['x'][n2])
+#                         dlon_lst.append(pos['x'][n1])
+#                         slon_lst.append(pos['x'][n1])
+#                         dlon_lst.append(pos['x'][2])
+# 
+# 
+# =============================================================================
 # =============================================================================
 # 
 # for c in model.getConstrs():
@@ -240,7 +263,7 @@ airports_lon = []
 airports_lat =[]
 
 for idx in range(len(Sapt_df['airport'])):
-    airports.append(str(idx))#Sapt_df['airport'][idx])#+ '(nr.'+ str(idx) + ')')
+    airports.append(Sapt_df['airport'][idx])#+ '(nr.'+ str(idx) + ')')
     airports_lon.append(Sapt_df['lon'][idx])
     airports_lat.append(Sapt_df['lat'][idx])
 fig.add_trace(
