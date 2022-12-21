@@ -79,54 +79,48 @@ print('Objective function set', time.time())
 #Amsterdam hub is node number 2
            
 
-#Each vehicle can only be used once for the outgoing legs
+
 
 for k in range(n_vehicles):
-    model.addConstr(quicksum(x[w,n1,n2,n3,k] for w in range(2) for n2 in range(n_nodes) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2 ), GRB.LESS_EQUAL, 1)
+    #Each vehicle can only be used once for the outgoing legs
+    model.addConstr(quicksum(x[1,n1,n2,n3,k] for n2 in range(n_nodes) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2 ), GRB.LESS_EQUAL, 1)
 
-print('Set constraint of using vehicle at most once', time.time())
-#Each customer must be visited by a vehicle
+    #Capacity contraints for returning flights
+    model.addConstr(quicksum((Retdem['capacity'][n1] * Retdem['freq'][n1]+ Retdem['capacity'][n2] * Retdem['freq'][n2] + Retdem['freq'][n3]*dem['capacity'][n3]) * x[0,n3,n2,n1,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
+    
+    #Capacity contraints for outgoing flights
+    model.addConstr(quicksum((dem['capacity'][n1] * dem['freq'][n1]+ dem['capacity'][n2] * dem['freq'][n2] + dem['freq'][n3]*dem['capacity'][n3]) * x[1,n1,n2,n3,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
+    
+
 
 
 for n2 in range(n_nodes):
     if n2 != 2:
-        model.addConstr(quicksum(x[w,n1,n2,n3, k] for w in range(2) for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2)
-                        + quicksum(x[w,n2,n1,n3, k] for w in range(2) for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if  n1 != 2 and n2 != 2 and n3 !=2)
-                        + quicksum(x[w,n1,n3,n2, k] for w in range(2) for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if  n1 != 2 and n2 != 2 and n3 !=2), GRB.GREATER_EQUAL, 1, name = "Visit Customer Once")
+        #Each customer must be visited by a vehicle on the outgoing phase
+        model.addConstr(quicksum(x[1,n1,n2,n3, k]for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2)
+                        + quicksum(x[1,n2,n1,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if  n1 != 2 and n2 != 2 and n3 !=2)
+                        + quicksum(x[1,n1,n3,n2, k]  for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if  n1 != 2 and n2 != 2 and n3 !=2), GRB.GREATER_EQUAL, 1, name = "Visit Customer Once")
+        
+        #Each customer must be visited by a vehicle on the returning phase
+        model.addConstr(quicksum(x[0,n1,n2,n3, k]  for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2)
+                        + quicksum(x[0,n2,n1,n3, k]  for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if  n1 != 2 and n2 != 2 and n3 !=2)
+                        + quicksum(x[0,n1,n3,n2, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n3 in range(n_nodes) if  n1 != 2 and n2 != 2 and n3 !=2), GRB.GREATER_EQUAL, 1, name = "Visit Customer Once")
+  
+        
 
-print('Set constraint of each customer visited once', time.time())
-#Capacity contraints for outgoing flights
-
-
-
-for k in range(n_vehicles):
-        model.addConstr(quicksum((dem['capacity'][n1] * dem['freq'][n1]+ dem['capacity'][n2] * dem['freq'][n2] + dem['freq'][n3]*dem['capacity'][n3]) * x[1,n1,n2,n3,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
-
-print('Set constraint of outgoing flight capacity', time.time())
-#Capacity contraints for returning flights
-
-
-
-for k in range(n_vehicles):
-        model.addConstr(quicksum((Retdem['capacity'][n1] * Retdem['freq'][n1]+ Retdem['capacity'][n2] * Retdem['freq'][n2] + Retdem['freq'][n3]*dem['capacity'][n3]) * x[0,n3,n2,n1,k] for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2), GRB.LESS_EQUAL, train_capacity )
-
-
-print('Set constraint of returning flight capacity', time.time())
 
 #Vehile arriving at node 3 from an outgoing leg is also used for a returning leg
 
-# =============================================================================
-# 
-# 
-# for n3 in range(n_nodes):
-#     for k in range(n_vehicles):
-#         if n3 != 2:
-#             model.addConstr(quicksum(x[1,n1,n2,n3, k]  for n1 in range(n_nodes) for n2 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2), GRB.EQUAL, quicksum(x[0,n3,n2,n1, k]  for n1 in range(n_nodes) for n2 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2), name = "Enter Node Leave Node")
-#     
-# print('set constraint of same vehicle being used', time.time())
-# 
-# 
-# =============================================================================
+
+
+for n3 in range(n_nodes):
+    for k in range(n_vehicles):
+        if n3 != 2:
+            model.addConstr(quicksum(x[1,n1,n2,n3, k]  for n1 in range(n_nodes) for n2 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2), GRB.EQUAL, quicksum(x[0,n3,n2,n1, k]  for n1 in range(n_nodes) for n2 in range(n_nodes) if n1 != 2 and n2 != 2 and n3 !=2), name = "Enter Node Leave Node")
+    
+print('Set all constraints', time.time())
+
+
 
 
 model.update()
@@ -136,7 +130,7 @@ model.optimize()
 endTime   = time.time()
 
 #visualize
-
+#%%
 slat_lst = []
 slon_lst = []
 dlat_lst = []
@@ -144,6 +138,8 @@ dlon_lst = []
 nr_flights = []
 
 Sapt_df = pd.read_csv('ModelData/airportsUnique.csv')
+
+color_lst = []
 
 for n1 in range(n_nodes):
     for n2 in range(n_nodes):
@@ -154,12 +150,15 @@ for n1 in range(n_nodes):
                         print('Outgoing',Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3],k)
                         #import pdb;pdb.set_trace()
                         nr_flights.append(k)
+                        color_lst.append('red')
                         slat_lst.append(pos['y'][2])
                         dlat_lst.append(pos['y'][n1])
                         nr_flights.append(k)
+                        color_lst.append('red')
                         slat_lst.append(pos['y'][n1])
                         dlat_lst.append(pos['y'][n2])   
                         nr_flights.append(k)
+                        color_lst.append('red')
                         slat_lst.append(pos['y'][n2])
                         dlat_lst.append(pos['y'][n3])
 
@@ -173,15 +172,18 @@ for n1 in range(n_nodes):
 
 
                     if x[0,n3,n2, n1,k].X > 0:
-                        print('Return', Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3],k)
+                        print('Return', Sapt_df['airport'][n3],Sapt_df['airport'][n2], Sapt_df['airport'][n1],k)
                         #import pdb;pdb.set_trace()
                         nr_flights.append(k)
+                        color_lst.append('blue')
                         slat_lst.append(pos['y'][n3])
                         dlat_lst.append(pos['y'][n2])
                         nr_flights.append(k)
+                        color_lst.append('blue')
                         slat_lst.append(pos['y'][n2])
                         dlat_lst.append(pos['y'][n1])   
                         nr_flights.append(k)
+                        color_lst.append('blue')
                         slat_lst.append(pos['y'][n1])
                         dlat_lst.append(pos['y'][2])
 
@@ -202,20 +204,20 @@ for n1 in range(n_nodes):
 # 
 # =============================================================================
 fig = go.Figure()
-source_to_dest = zip(slat_lst, dlat_lst, slon_lst, dlon_lst, nr_flights)
+source_to_dest = zip(slat_lst, dlat_lst, slon_lst, dlon_lst, nr_flights, color_lst)
 
-get_colors = lambda n: ["#%06x" % random.randint(0, 0xFFFFFF) for _ in range(n)]
+#get_colors = lambda n: ["#%06x" % random.randint(0, 0xFFFFFF) for _ in range(n)]
     
 
-color_lst = get_colors(n_vehicles)
+#color_lst = get_colors(n_vehicles)
 # Loop through each flight entry
-for slat, dlat, slon, dlon, num_flights in source_to_dest:
+for slat, dlat, slon, dlon, num_flights, color in source_to_dest:
 
     fig.add_trace(go.Scattergeo(
                         lat=[slat, dlat],
                         lon=[slon, dlon],
                         mode='lines',
-                        line=dict(width= 1, color = color_lst[num_flights])
+                        line=dict(width= 1, color = color)#_lst[num_flights])
                         ))
 
 
