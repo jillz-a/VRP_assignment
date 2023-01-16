@@ -130,80 +130,91 @@ UK_nodes = [14,31,25,36,28,29,9,13] # Entry through node 28 or 29 from 10
 Scan_nodes = [4,16,41,40,38,37,42,21,45, 12] #Entry through node 12 from 24
 
 
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in range(n_nodes) for n3 in Scan_nodes if n1 != 12 and n2 not in Scan_nodes ),GRB.EQUAL, 0, name =  "Entry Node")
+#Geographical constraints for Scandinavian nodes on the ougoing segment
 
 
-# =============================================================================
-# 
-# #Segments combining Scandinavian nodes with other nodes are not possible
-# for n in range(n_nodes):
-#     if n not in Scan_nodes:
-#         if n != 24 and n != 2: #Entry Node
-#         
-#             #One node outside the subset, two in inside        
-#             model.addConstr(quicksum(x[1,n,n2,n3, k] for k in range(n_vehicles) for n2 in Scan_nodes for n3 in Scan_nodes if n2 != 12)
-#                         + quicksum(x[1,n2,n,n3, k] for k in range(n_vehicles) for n2 in Scan_nodes for n3 in Scan_nodes)
-#                         + quicksum(x[1,n2,n3,n, k]  for k in range(n_vehicles) for n2 in Scan_nodes for n3 in Scan_nodes), GRB.EQUAL, 0, name = "Scan constraint")
-#             
-#             #Two outside one inside
-#             model.addConstr(quicksum(x[1,n,n2,n3, k]  for k in range(n_vehicles) for n2 in range(n_nodes) for n3 in Scan_nodes if n2 !=  24 and n2 != 2 and n2 not in Scan_nodes)
-#                         + quicksum(x[1,n3,n,n2, k] for k in range(n_vehicles) for n2 in range(n_nodes) for n3 in Scan_nodes if n2 != 2 and n2 not in Scan_nodes)
-#                         + quicksum(x[1,n2,n3,n, k]  for k in range(n_vehicles) for n2 in range(n_nodes) for n3 in Scan_nodes if n2 !=  24 and n2 != 2 and n2 not in Scan_nodes), GRB.EQUAL, 0, name = "Scan constraint")
-#         
-#      
-# 
-# #Nodes in scandinativan domain can only be entered via node 12 (Copenhagen)
-# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in Scan_nodes if n1 != 12 ),GRB.EQUAL, 0, name =  "Entry Node")
-# 
-# =============================================================================
 
-# =============================================================================
-# #Segments combining Scandinavian nodes with other nodes are not possible
-# for n in range(n_nodes):
-#     if n not in Scan_nodes:
-#         if n != 24 and n != 2: #Entry Node
-#         
-#             #One node outside the subset, two in inside        
-#             model.addConstr(quicksum(x[w,n,n2,n3, k] for w in range(2) for k in range(n_vehicles) for n2 in Scan_nodes for n3 in Scan_nodes)
-#                         + quicksum(x[w,n2,n,n3, k] for w in range(2) for k in range(n_vehicles) for n2 in Scan_nodes for n3 in Scan_nodes)
-#                         + quicksum(x[w,n2,n3,n, k]  for w in range(2) for k in range(n_vehicles) for n2 in Scan_nodes for n3 in Scan_nodes), GRB.EQUAL, 0, name = "Scan constraint")
-#             
-#             #Two outside one inside
-#             model.addConstr(quicksum(x[w,n,n2,n3, k] for w in range(2) for k in range(n_vehicles) for n2 in range(n_nodes) for n3 in Scan_nodes if n2 !=  24 and n2 != 2 and n2 not in Scan_nodes)
-#                         + quicksum(x[w,n3,n,n2, k] for w in range(2) for k in range(n_vehicles) for n2 in range(n_nodes) for n3 in Scan_nodes if n2 !=  24 and n2 != 2 and n2 not in Scan_nodes)
-#                         + quicksum(x[w,n2,n3,n, k]  for w in range(2) for k in range(n_vehicles) for n2 in range(n_nodes) for n3 in Scan_nodes if n2 !=  24 and n2 != 2 and n2 not in Scan_nodes), GRB.EQUAL, 0, name = "Scan constraint")
-#         
-#      
-# 
-# #Nodes in scandinativan domain can only be entered via node 12 (Copenhagen)
-# model.addConstr(quicksum(x[w,n1,n2,n3, k] for w in range(2) for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in Scan_nodes if n1 != 12 ),GRB.EQUAL, 0, name =  "Entry Node")
-# 
-# 
-# =============================================================================
-# =============================================================================
-# 
-# #Segments combining UK nodes with other nodes are not possible
-# for n in range(n_nodes):
-#     if n not in UK_nodes:
-#         if n != 10 and n != 2: #Entry Node
-#         
-#             #One node outside the subset, two in inside        
-#             model.addConstr(quicksum(x[w,n,n2,n3, k] for w in range(2) for k in range(n_vehicles) for n2 in UK_nodes for n3 in UK_nodes)
-#                         + quicksum(x[w,n2,n,n3, k] for w in range(2) for k in range(n_vehicles) for n2 in UK_nodes for n3 in UK_nodes)
-#                         + quicksum(x[w,n2,n3,n, k]  for w in range(2) for k in range(n_vehicles) for n2 in UK_nodes for n3 in UK_nodes), GRB.EQUAL, 0, name = "Scan constraint")
-#             
-#             #Two outside one inside
-#             model.addConstr(quicksum(x[w,n,n2,n3, k] for w in range(2) for k in range(n_vehicles) for n2 in range(n_nodes) for n3 in UK_nodes if n2 !=  10 and n2 != 2)
-#                         + quicksum(x[w,n3,n,n2, k] for w in range(2) for k in range(n_vehicles) for n2 in range(n_nodes) for n3 in UK_nodes if n2 !=  10 and n2 != 2)
-#                         + quicksum(x[w,n2,n3,n, k]  for w in range(2) for k in range(n_vehicles) for n2 in range(n_nodes) for n3 in UK_nodes if n2 !=  10 and n2 != 2), GRB.EQUAL, 0, name = "Scan constraint")
-#         
-#      
-# 
-# #Nodes in scandinativan domain can only be entered via node 12 (Copenhagen)
-# model.addConstr(quicksum(x[w,n1,n2,n3, k] for w in range(2) for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in Scan_nodes if n1 !=  28),GRB.EQUAL, 0, name =  "Entry Node")
-# 
-# 
-# =============================================================================
+model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in range(n_nodes) for n3 in Scan_nodes if n1 != 12 and n2 not in Scan_nodes and n2 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in range(n_nodes) if n1 != 12  and n3 not in Scan_nodes and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 12 and n2 not in Scan_nodes and n3 not in Scan_nodes and n2 != 2 and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in Scan_nodes if n1 != 12),GRB.EQUAL, 0, name =  "Entry Node")
+
+model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in Scan_nodes for n3 in range(n_nodes) if n1 not in Scan_nodes and n1 != 2 and n2 != 12 and n3 != 2 and n3 not in Scan_nodes),GRB.EQUAL, 0, name =  "Entry Node")
+
+model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in Scan_nodes if n1 not in Scan_nodes and n1 != 2 and n2 not in Scan_nodes and n2 != 2 and n3 != 12),GRB.EQUAL, 0, name =  "Entry Node")
+
+model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in Scan_nodes for n3 in Scan_nodes if n1 not in Scan_nodes and n1 != 2 and n2 != 12),GRB.EQUAL, 0, name =  "Entry Node")
+
+
+model.addConstr(quicksum(x[1,12,n2,n3, k] for k in range(n_vehicles) for n2 in Scan_nodes for n3 in range(n_nodes) if n2 != 12 and n3 not in Scan_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
+
+
+
+
+
+
+#Geographical constraints for UK nodes on the ougoing segment
+
+
+
+model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in range(n_nodes) for n3 in UK_nodes if n1 != 29 and n2 not in UK_nodes and n2 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in UK_nodes for n3 in range(n_nodes) if n1 != 29 and n3 not in UK_nodes and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 29 and n2 not in UK_nodes and n3 not in UK_nodes and n2 != 2 and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in UK_nodes for n3 in UK_nodes if n1 != 29),GRB.EQUAL, 0, name =  "Entry Node")
+
+model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in UK_nodes for n3 in range(n_nodes) if n1 not in UK_nodes and n1 != 2 and n2 != 29 and n3 != 2 and n3 not in UK_nodes),GRB.EQUAL, 0, name =  "Entry Node")
+
+model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in UK_nodes if n1 not in UK_nodes and n1 != 2 and n2 not in UK_nodes and n2 != 2 and n3 != 29),GRB.EQUAL, 0, name =  "Entry Node")
+
+model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in UK_nodes for n3 in UK_nodes if n1 not in UK_nodes and n1 != 2 and n2 != 29 ),GRB.EQUAL, 0, name =  "Entry Node")
+
+
+model.addConstr(quicksum(x[1,29,n2,n3, k] for k in range(n_vehicles) for n2 in UK_nodes for n3 in range(n_nodes) if n3 not in UK_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
+
+
+
+
+#Geographical constraints for Scandinavian nodes on the returning segment
+
+
+
+model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in range(n_nodes) for n3 in Scan_nodes if n1 != 12 and n2 not in Scan_nodes and n2 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in range(n_nodes) if n1 != 12  and n3 not in Scan_nodes and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 12 and n2 not in Scan_nodes and n3 not in Scan_nodes and n2 != 2 and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in Scan_nodes if n1 != 12),GRB.EQUAL, 0, name =  "Entry Node")
+
+model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in Scan_nodes for n3 in range(n_nodes) if n1 not in Scan_nodes and n1 != 2 and n2 != 12 and n3 != 2 and n3 not in Scan_nodes),GRB.EQUAL, 0, name =  "Entry Node")
+
+model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in Scan_nodes if n1 not in Scan_nodes and n1 != 2 and n2 not in Scan_nodes and n2 != 2 and n3 != 12),GRB.EQUAL, 0, name =  "Entry Node")
+
+model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in Scan_nodes for n3 in Scan_nodes if n1 not in Scan_nodes and n1 != 2 and n2 != 12),GRB.EQUAL, 0, name =  "Entry Node")
+
+
+model.addConstr(quicksum(x[0,n3,n2,12, k] for k in range(n_vehicles) for n2 in Scan_nodes for n3 in range(n_nodes) if n2 != 12 and n3 not in Scan_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
+
+
+
+
+
+
+#Geographical constraints for UK nodes on the returning segment
+
+
+
+model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in range(n_nodes) for n3 in UK_nodes if n1 != 29 and n2 not in UK_nodes and n2 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in UK_nodes for n3 in range(n_nodes) if n1 != 29 and n3 not in UK_nodes and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 29 and n2 not in UK_nodes and n3 not in UK_nodes and n2 != 2 and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in UK_nodes for n3 in UK_nodes if n1 != 29),GRB.EQUAL, 0, name =  "Entry Node")
+
+model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in UK_nodes for n3 in range(n_nodes) if n1 not in UK_nodes and n1 != 2 and n2 != 29 and n3 != 2 and n3 not in UK_nodes),GRB.EQUAL, 0, name =  "Entry Node")
+
+model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in UK_nodes if n1 not in UK_nodes and n1 != 2 and n2 not in UK_nodes and n2 != 2 and n3 != 29),GRB.EQUAL, 0, name =  "Entry Node")
+
+model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in UK_nodes for n3 in UK_nodes if n1 not in UK_nodes and n1 != 2 and n2 != 29 ),GRB.EQUAL, 0, name =  "Entry Node")
+
+
+model.addConstr(quicksum(x[0,n1,n2,29, k] for k in range(n_vehicles) for n2 in UK_nodes for n3 in range(n_nodes) if n3 not in UK_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
+
 
 
 model.update()
@@ -254,33 +265,31 @@ for n1 in range(n_nodes):
                         dlon_lst.append(pos['x'][n3])
 
 
-# =============================================================================
-#                     if x[0,n3,n2, n1,k].X > 0:
-#                         print('Return', Sapt_df['airport'][n3],Sapt_df['airport'][n2], Sapt_df['airport'][n1],k)
-#                         #import pdb;pdb.set_trace()
-#                         nr_flights.append(k)
-#                         color_lst.append('blue')
-#                         slat_lst.append(pos['y'][n3])
-#                         dlat_lst.append(pos['y'][n2])
-#                         nr_flights.append(k)
-#                         color_lst.append('blue')
-#                         slat_lst.append(pos['y'][n2])
-#                         dlat_lst.append(pos['y'][n1])   
-#                         nr_flights.append(k)
-#                         color_lst.append('blue')
-#                         slat_lst.append(pos['y'][n1])
-#                         dlat_lst.append(pos['y'][2])
-# 
-#                         
-#                         slon_lst.append(pos['x'][n3])
-#                         dlon_lst.append(pos['x'][n2])
-#                         slon_lst.append(pos['x'][n2])
-#                         dlon_lst.append(pos['x'][n1])
-#                         slon_lst.append(pos['x'][n1])
-#                         dlon_lst.append(pos['x'][2])
-# 
-# 
-# =============================================================================
+                    if x[0,n3,n2, n1,k].X > 0:
+                        print('Return', Sapt_df['airport'][n3],Sapt_df['airport'][n2], Sapt_df['airport'][n1],k)
+                        #import pdb;pdb.set_trace()
+                        nr_flights.append(k)
+                        color_lst.append('blue')
+                        slat_lst.append(pos['y'][n3])
+                        dlat_lst.append(pos['y'][n2])
+                        nr_flights.append(k)
+                        color_lst.append('blue')
+                        slat_lst.append(pos['y'][n2])
+                        dlat_lst.append(pos['y'][n1])   
+                        nr_flights.append(k)
+                        color_lst.append('blue')
+                        slat_lst.append(pos['y'][n1])
+                        dlat_lst.append(pos['y'][2])
+
+                        
+                        slon_lst.append(pos['x'][n3])
+                        dlon_lst.append(pos['x'][n2])
+                        slon_lst.append(pos['x'][n2])
+                        dlon_lst.append(pos['x'][n1])
+                        slon_lst.append(pos['x'][n1])
+                        dlon_lst.append(pos['x'][2])
+
+
 # =============================================================================
 # 
 # for c in model.getConstrs():
@@ -318,7 +327,7 @@ airports_lon = []
 airports_lat =[]
 
 for idx in range(len(Sapt_df['airport'])):
-    airports.append(str(idx))#Sapt_df['airport'][idx])#+ '(nr.'+ str(idx) + ')')
+    airports.append(Sapt_df['airport'][idx])#+ '(nr.'+ str(idx) + ')')
     airports_lon.append(Sapt_df['lon'][idx])
     airports_lat.append(Sapt_df['lat'][idx])
 fig.add_trace(
