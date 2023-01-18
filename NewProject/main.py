@@ -42,14 +42,16 @@ x = {}
 for n1 in range(n_nodes):
     for n2 in range(n_nodes):
         for n3 in range(n_nodes):
-            if n1 != 2 and n2 != 2 and n3 !=2: #n1 != n2 and n2 != n3 and n3 != n1 and
-                for k in range(n_vehicles):
-                    x[1,n1,n2,n3, k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #Is route from hub  via n1, n2, and n3 ie. Outgoing flights
-                    x[0,n3,n2,n1, k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #Is route to hub back to hub via n1, n2, and n3 ie. Returning flights
+            for k in range(n_vehicles):
+                if n1 != 2 and n2 != 2 and n3 !=2: #n1 != n2 and n2 != n3 and n3 != n1 and
                     
-                    #Important to note that there is not the same amount of flights leaving and returning to AMS
-                
-                    #Could consider that instead of serving 3 nodes 4 nodes are used as this would be the theoretical maximum amount of nodes which could be served by a full train of 377 seats serving 4 nodes of 88 demand
+                        x[1,n1,n2,n3, k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #Is route from hub  via n1, n2, and n3 ie. Outgoing flights
+                        x[0,n3,n2,n1, k] = model.addVar(vtype=GRB.BINARY, name= "x[%d, %d, %d]"%(n1,n2,k)) #Is route to hub back to hub via n1, n2, and n3 ie. Returning flights
+                        
+                        #Important to note that there is not the same amount of flights leaving and returning to AMS
+                    
+                        #Could consider that instead of serving 3 nodes 4 nodes are used as this would be the theoretical maximum amount of nodes which could be served by a full train of 377 seats serving 4 nodes of 88 demand
+
 model.update()
 
 print('Defined all variables', time.time() - startTimeSetUp)
