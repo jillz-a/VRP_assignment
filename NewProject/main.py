@@ -22,6 +22,9 @@ Retdem = pd.read_csv('ModelData/demandReturn.csv')
 
 n_vehicles = 50 #number of trains
 train_capacity = 377 #377 # based of thalys
+t_1 = train_capacity
+t_2 = 2 * train_capacity
+t_3 = 3 * train_capacity
 
 #With this number a route should at most consit of 4 stops
 
