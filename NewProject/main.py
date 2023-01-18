@@ -123,99 +123,108 @@ print('Set all constraints', time.time() - startTimeSetUp)
 
 #Geographical constraints for trains towards Scandinavia and the UK
 
-
-UK_nodes = [14,31,25,36,28,29,9,13] # Entry through node 28 or 29 from 10
-
-
-Scan_nodes = [4,16,41,40,38,37,42,21,45, 12] #Entry through node 12 from 24
-
-
-#Geographical constraints for Scandinavian nodes on the ougoing segment
-
-
-
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in range(n_nodes) for n3 in Scan_nodes if n1 != 12 and n2 not in Scan_nodes and n2 != 2),GRB.EQUAL, 0, name =  "Entry Node")
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in range(n_nodes) if n1 != 12  and n3 not in Scan_nodes and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 12 and n2 not in Scan_nodes and n3 not in Scan_nodes and n2 != 2 and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in Scan_nodes if n1 != 12),GRB.EQUAL, 0, name =  "Entry Node")
-
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in Scan_nodes for n3 in range(n_nodes) if n1 not in Scan_nodes and n1 != 2 and n2 != 12 and n3 != 2 and n3 not in Scan_nodes),GRB.EQUAL, 0, name =  "Entry Node")
-
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in Scan_nodes if n1 not in Scan_nodes and n1 != 2 and n2 not in Scan_nodes and n2 != 2 and n3 != 12),GRB.EQUAL, 0, name =  "Entry Node")
-
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in Scan_nodes for n3 in Scan_nodes if n1 not in Scan_nodes and n1 != 2 and n2 != 12),GRB.EQUAL, 0, name =  "Entry Node")
-
-
-model.addConstr(quicksum(x[1,12,n2,n3, k] for k in range(n_vehicles) for n2 in Scan_nodes for n3 in range(n_nodes) if n2 != 12 and n3 not in Scan_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
-
-
-
-
-
-
-#Geographical constraints for UK nodes on the ougoing segment
-
-
-
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in range(n_nodes) for n3 in UK_nodes if n1 != 29 and n2 not in UK_nodes and n2 != 2),GRB.EQUAL, 0, name =  "Entry Node")
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in UK_nodes for n3 in range(n_nodes) if n1 != 29 and n3 not in UK_nodes and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 29 and n2 not in UK_nodes and n3 not in UK_nodes and n2 != 2 and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in UK_nodes for n3 in UK_nodes if n1 != 29),GRB.EQUAL, 0, name =  "Entry Node")
-
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in UK_nodes for n3 in range(n_nodes) if n1 not in UK_nodes and n1 != 2 and n2 != 29 and n3 != 2 and n3 not in UK_nodes),GRB.EQUAL, 0, name =  "Entry Node")
-
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in UK_nodes if n1 not in UK_nodes and n1 != 2 and n2 not in UK_nodes and n2 != 2 and n3 != 29),GRB.EQUAL, 0, name =  "Entry Node")
-
-model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in UK_nodes for n3 in UK_nodes if n1 not in UK_nodes and n1 != 2 and n2 != 29 ),GRB.EQUAL, 0, name =  "Entry Node")
-
-
-model.addConstr(quicksum(x[1,29,n2,n3, k] for k in range(n_vehicles) for n2 in UK_nodes for n3 in range(n_nodes) if n3 not in UK_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
-
-
-
-
-#Geographical constraints for Scandinavian nodes on the returning segment
-
-
-
-model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in range(n_nodes) for n3 in Scan_nodes if n1 != 12 and n2 not in Scan_nodes and n2 != 2),GRB.EQUAL, 0, name =  "Entry Node")
-model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in range(n_nodes) if n1 != 12  and n3 not in Scan_nodes and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
-model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 12 and n2 not in Scan_nodes and n3 not in Scan_nodes and n2 != 2 and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
-model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in Scan_nodes if n1 != 12),GRB.EQUAL, 0, name =  "Entry Node")
-
-model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in Scan_nodes for n3 in range(n_nodes) if n1 not in Scan_nodes and n1 != 2 and n2 != 12 and n3 != 2 and n3 not in Scan_nodes),GRB.EQUAL, 0, name =  "Entry Node")
-
-model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in Scan_nodes if n1 not in Scan_nodes and n1 != 2 and n2 not in Scan_nodes and n2 != 2 and n3 != 12),GRB.EQUAL, 0, name =  "Entry Node")
-
-model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in Scan_nodes for n3 in Scan_nodes if n1 not in Scan_nodes and n1 != 2 and n2 != 12),GRB.EQUAL, 0, name =  "Entry Node")
-
-
-model.addConstr(quicksum(x[0,n3,n2,12, k] for k in range(n_vehicles) for n2 in Scan_nodes for n3 in range(n_nodes) if n2 != 12 and n3 not in Scan_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
-
-
-
-
-
-
-#Geographical constraints for UK nodes on the returning segment
-
-
-
-model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in range(n_nodes) for n3 in UK_nodes if n1 != 29 and n2 not in UK_nodes and n2 != 2),GRB.EQUAL, 0, name =  "Entry Node")
-model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in UK_nodes for n3 in range(n_nodes) if n1 != 29 and n3 not in UK_nodes and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
-model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 29 and n2 not in UK_nodes and n3 not in UK_nodes and n2 != 2 and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
-model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in UK_nodes for n3 in UK_nodes if n1 != 29),GRB.EQUAL, 0, name =  "Entry Node")
-
-model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in UK_nodes for n3 in range(n_nodes) if n1 not in UK_nodes and n1 != 2 and n2 != 29 and n3 != 2 and n3 not in UK_nodes),GRB.EQUAL, 0, name =  "Entry Node")
-
-model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in UK_nodes if n1 not in UK_nodes and n1 != 2 and n2 not in UK_nodes and n2 != 2 and n3 != 29),GRB.EQUAL, 0, name =  "Entry Node")
-
-model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in UK_nodes for n3 in UK_nodes if n1 not in UK_nodes and n1 != 2 and n2 != 29 ),GRB.EQUAL, 0, name =  "Entry Node")
-
-
-model.addConstr(quicksum(x[0,n1,n2,29, k] for k in range(n_vehicles) for n2 in UK_nodes for n3 in range(n_nodes) if n3 not in UK_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
-
-
+# =============================================================================
+# 
+# #UK_nodes = [14,31,25,36,28,29,9,13] # Entry through node 28 or 29 from 10 FOR LARGE DATASET
+# 
+# UK_nodes = [9] # Entry through node 28 or 29 from 10
+# 
+# 
+# 
+# #Scan_nodes = [4,16,41,40,38,37,42,21,45, 12] #Entry through node 12 from 24 FOR LARGE DATASET
+# 
+# 
+# Scan_nodes = [4] #Entry through node 12 from 24
+# 
+# 
+# 
+# #Geographical constraints for Scandinavian nodes on the ougoing segment
+# 
+# 
+# 
+# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in range(n_nodes) for n3 in Scan_nodes if n1 != 12 and n2 not in Scan_nodes and n2 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in range(n_nodes) if n1 != 12  and n3 not in Scan_nodes and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 12 and n2 not in Scan_nodes and n3 not in Scan_nodes and n2 != 2 and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in Scan_nodes if n1 != 12),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in Scan_nodes for n3 in range(n_nodes) if n1 not in Scan_nodes and n1 != 2 and n2 != 12 and n3 != 2 and n3 not in Scan_nodes),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in Scan_nodes if n1 not in Scan_nodes and n1 != 2 and n2 not in Scan_nodes and n2 != 2 and n3 != 12),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in Scan_nodes for n3 in Scan_nodes if n1 not in Scan_nodes and n1 != 2 and n2 != 12),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# 
+# model.addConstr(quicksum(x[1,12,n2,n3, k] for k in range(n_vehicles) for n2 in Scan_nodes for n3 in range(n_nodes) if n2 != 12 and n3 not in Scan_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# 
+# 
+# 
+# 
+# 
+# #Geographical constraints for UK nodes on the ougoing segment
+# 
+# 
+# 
+# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in range(n_nodes) for n3 in UK_nodes if n1 != 29 and n2 not in UK_nodes and n2 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in UK_nodes for n3 in range(n_nodes) if n1 != 29 and n3 not in UK_nodes and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 29 and n2 not in UK_nodes and n3 not in UK_nodes and n2 != 2 and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in UK_nodes for n3 in UK_nodes if n1 != 29),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in UK_nodes for n3 in range(n_nodes) if n1 not in UK_nodes and n1 != 2 and n2 != 29 and n3 != 2 and n3 not in UK_nodes),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in UK_nodes if n1 not in UK_nodes and n1 != 2 and n2 not in UK_nodes and n2 != 2 and n3 != 29),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# model.addConstr(quicksum(x[1,n1,n2,n3, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in UK_nodes for n3 in UK_nodes if n1 not in UK_nodes and n1 != 2 and n2 != 29 ),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# 
+# model.addConstr(quicksum(x[1,29,n2,n3, k] for k in range(n_vehicles) for n2 in UK_nodes for n3 in range(n_nodes) if n3 not in UK_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# 
+# 
+# 
+# #Geographical constraints for Scandinavian nodes on the returning segment
+# 
+# 
+# 
+# model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in range(n_nodes) for n3 in Scan_nodes if n1 != 12 and n2 not in Scan_nodes and n2 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+# model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in range(n_nodes) if n1 != 12  and n3 not in Scan_nodes and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+# model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 12 and n2 not in Scan_nodes and n3 not in Scan_nodes and n2 != 2 and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+# model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in Scan_nodes for n2 in Scan_nodes for n3 in Scan_nodes if n1 != 12),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in Scan_nodes for n3 in range(n_nodes) if n1 not in Scan_nodes and n1 != 2 and n2 != 12 and n3 != 2 and n3 not in Scan_nodes),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in Scan_nodes if n1 not in Scan_nodes and n1 != 2 and n2 not in Scan_nodes and n2 != 2 and n3 != 12),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in Scan_nodes for n3 in Scan_nodes if n1 not in Scan_nodes and n1 != 2 and n2 != 12),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# 
+# model.addConstr(quicksum(x[0,n3,n2,12, k] for k in range(n_vehicles) for n2 in Scan_nodes for n3 in range(n_nodes) if n2 != 12 and n3 not in Scan_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# 
+# 
+# 
+# 
+# 
+# #Geographical constraints for UK nodes on the returning segment
+# 
+# 
+# 
+# model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in range(n_nodes) for n3 in UK_nodes if n1 != 29 and n2 not in UK_nodes and n2 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+# model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in UK_nodes for n3 in range(n_nodes) if n1 != 29 and n3 not in UK_nodes and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+# model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in range(n_nodes) for n3 in range(n_nodes) if n1 != 29 and n2 not in UK_nodes and n3 not in UK_nodes and n2 != 2 and n3 != 2),GRB.EQUAL, 0, name =  "Entry Node")
+# model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in UK_nodes for n2 in UK_nodes for n3 in UK_nodes if n1 != 29),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in UK_nodes for n3 in range(n_nodes) if n1 not in UK_nodes and n1 != 2 and n2 != 29 and n3 != 2 and n3 not in UK_nodes),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in range(n_nodes) for n3 in UK_nodes if n1 not in UK_nodes and n1 != 2 and n2 not in UK_nodes and n2 != 2 and n3 != 29),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# model.addConstr(quicksum(x[0,n3,n2,n1, k] for k in range(n_vehicles) for n1 in range(n_nodes) for n2 in UK_nodes for n3 in UK_nodes if n1 not in UK_nodes and n1 != 2 and n2 != 29 ),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# 
+# model.addConstr(quicksum(x[0,n1,n2,29, k] for k in range(n_vehicles) for n2 in UK_nodes for n3 in range(n_nodes) if n3 not in UK_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
+# 
+# 
+# =============================================================================
 
 model.update()
 #model.write('model_formulation.lp')   
