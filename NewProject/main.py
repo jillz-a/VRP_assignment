@@ -328,6 +328,7 @@ for slat, dlat, slon, dlon, num_flights, color in source_to_dest:
                         mode='lines',
                         line=dict(width= 1, color = color)#_lst[num_flights])
                         ))
+    fig.update_traces(line_dash='dash')
 
 
 fig.update_layout(title_text='Connection Map Depicting Flights for Airline Network',
