@@ -13,15 +13,16 @@ pio.renderers.default = 'browser'
 
 
 #import data
-dist = pd.read_excel('ModelData/nodes_loc.xlsx', sheet_name='dist', header=None) #distances between the nodes
-pos = pd.read_excel('ModelData/nodes_loc.xlsx', sheet_name='loc')
-dem = pd.read_csv('ModelData/demand.csv')
-Retdem = pd.read_csv('ModelData/demandReturn.csv')
+dist = pd.read_excel('NewProject/ModelData/nodes_loc.xlsx', sheet_name='dist', header=None) #distances between the nodes
+pos = pd.read_excel('NewProject/ModelData/nodes_loc.xlsx', sheet_name='loc')
+dem = pd.read_csv('NewProject/ModelData/demand.csv')
+Retdem = pd.read_csv('NewProject/ModelData/demandReturn.csv')
 
 #Define constants
 
 n_vehicles = 50 #number of trains
 train_capacity = 377 #377 # based of thalys
+t_types = 3
 t_1 = train_capacity
 t_2 = 2 * train_capacity
 t_3 = 3 * train_capacity
@@ -245,7 +246,7 @@ dlat_lst = []
 dlon_lst = []
 nr_flights = []
 
-Sapt_df = pd.read_csv('ModelData/airportsUnique.csv')
+Sapt_df = pd.read_csv('NewProject/ModelData/airportsUnique.csv')
 
 color_lst = []
 
