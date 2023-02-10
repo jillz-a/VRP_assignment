@@ -112,7 +112,29 @@ for n2 in range(n_nodes):
                         + quicksum(x[0,n1,n3,n2]  for n1 in range(n_nodes) for n3 in range(n_nodes) if  n1 != 2 and n2 != 2 and n3 !=2), GRB.GREATER_EQUAL, 1, name = "Visit Customer Once")
   
         
+for a in range(n_nodes):
+    if a != 2:
+        model.addConstr(quicksum(
+        x[0, a, b, n1] for n1 in range(n_nodes) for b in range(n_nodes) if
+        n1 != 2 and b != 2)
+                    , GRB.LESS_EQUAL, 1, name="Node to origin used once")
 
+
+        for b in range(n_nodes):
+            if b !=2:
+        # Each customer must be visited by a vehicle on the returning phase
+                model.addConstr(quicksum(
+            x[0, a, b, n1] for n1 in range(n_nodes) if
+            n1 != 2)
+                        + quicksum(
+            x[0, b, a, n1] for n1 in range(n_nodes) if
+            n1 != 2)
+                        + quicksum(
+            x[0, n1, a, b] for n1 in range(n_nodes) if
+            n1 != 2)
+            + quicksum(
+            x[0, n1, b, a] for n1 in range(n_nodes) if
+            n1 != 2), GRB.LESS_EQUAL, 1, name="Between nodes used once")
 
 #Vehile arriving at node 3 from an outgoing leg is also used for a returning leg
 
@@ -248,6 +270,9 @@ nr_flights = []
 Sapt_df = pd.read_csv('NewProject/ModelData/LargeDataSet/airportsUnique.csv')
 
 color_lst = []
+
+#export routes
+r = {}
 
 for n1 in range(n_nodes):
     for n2 in range(n_nodes):
