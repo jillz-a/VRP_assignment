@@ -8,7 +8,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.io as pio
-import random
+import numpy as np
 pio.renderers.default = 'browser'
 
 
@@ -183,6 +183,8 @@ model.addConstr(quicksum(x[1,n1,n2,n3] for n1 in range(n_nodes) for n2 in Scan_n
 
 model.addConstr(quicksum(x[1,12,n2,n3] for n2 in Scan_nodes for n3 in range(n_nodes) if n2 != 12 and n3 not in Scan_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
 
+model.addConstr(quicksum(x[1,12,n3,n2] for n2 in Scan_nodes for n3 in range(n_nodes) if n2 != 12 and n3 not in Scan_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
+
 
 
 
@@ -205,6 +207,7 @@ model.addConstr(quicksum(x[1,n1,n2,n3] for n1 in range(n_nodes) for n2 in UK_nod
 
 
 model.addConstr(quicksum(x[1,29,n2,n3] for n2 in UK_nodes for n3 in range(n_nodes) if n3 not in UK_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[1,n3,29,n2] for n2 in UK_nodes for n3 in range(n_nodes) if n3 not in UK_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
 
 
 
@@ -227,6 +230,7 @@ model.addConstr(quicksum(x[0,n3,n2,n1] for n1 in range(n_nodes) for n2 in Scan_n
 
 model.addConstr(quicksum(x[0,n3,n2,12] for n2 in Scan_nodes for n3 in range(n_nodes) if n2 != 12 and n3 not in Scan_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
 
+model.addConstr(quicksum(x[0,12,n3,n2] for n2 in Scan_nodes for n3 in range(n_nodes) if n2 != 12 and n3 not in Scan_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
 
 
 
@@ -248,7 +252,8 @@ model.addConstr(quicksum(x[0,n3,n2,n1] for n1 in range(n_nodes) for n2 in range(
 model.addConstr(quicksum(x[0,n3,n2,n1] for n1 in range(n_nodes) for n2 in UK_nodes for n3 in UK_nodes if n1 not in UK_nodes and n1 != 2 and n2 != 29 ),GRB.EQUAL, 0, name =  "Entry Node")
 
 
-model.addConstr(quicksum(x[0,n1,n2,29] for n2 in UK_nodes for n3 in range(n_nodes) if n3 not in UK_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[0,n3,n2,29] for n2 in UK_nodes for n3 in range(n_nodes) if n3 not in UK_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
+model.addConstr(quicksum(x[0,n3,29,n2] for n2 in UK_nodes for n3 in range(n_nodes) if n3 not in UK_nodes and n3 !=2 ),GRB.EQUAL, 0, name =  "Entry Node")
 
 
 # =============================================================================
@@ -272,7 +277,8 @@ Sapt_df = pd.read_csv('NewProject/ModelData/LargeDataSet/airportsUnique.csv')
 color_lst = []
 
 #export routes
-r = {}
+r_out = []
+r_ret = []
 
 for n1 in range(n_nodes):
     for n2 in range(n_nodes):
@@ -282,7 +288,7 @@ for n1 in range(n_nodes):
                 if x[1,n1,n2, n3].X > 0:
                     print('Outgoing',Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3])
                     #import pdb;pdb.set_trace()
-                    
+                    r_out.append([1, n1, n2, n3])
                     color_lst.append('red')
                     slat_lst.append(pos['y'][2])
                     dlat_lst.append(pos['y'][n1])
@@ -307,7 +313,7 @@ for n1 in range(n_nodes):
                 if x[0,n3,n2, n1].X > 0:
                     print('Return', Sapt_df['airport'][n3],Sapt_df['airport'][n2], Sapt_df['airport'][n1])
                     #import pdb;pdb.set_trace()
-                    
+                    r_ret.append([0, n3, n2, n1])
                     color_lst.append('blue')
                     slat_lst.append(pos['y'][n3])
                     dlat_lst.append(pos['y'][n2])
@@ -328,6 +334,24 @@ for n1 in range(n_nodes):
                     slon_lst.append(pos['x'][n1])
                     dlon_lst.append(pos['x'][2])
 
+
+#sort output lists
+r_out_new = []
+r_ret_new = []
+for r_o in r_out:
+    for r_r in r_ret:
+        if r_o[3] == r_r[1]:
+            r_out_new.append(r_o)
+            r_ret_new.append(r_r)
+
+np.savetxt("r_out.csv", 
+           r_out_new,
+           delimiter =", ", 
+           fmt ='% s')
+np.savetxt("r_ret.csv", 
+           r_ret_new,
+           delimiter =", ", 
+           fmt ='% s')
 
 # =============================================================================
 # 
@@ -367,7 +391,7 @@ airports_lon = []
 airports_lat =[]
 
 for idx in range(len(Sapt_df['airport'])):
-    airports.append(Sapt_df['airport'][idx])#+ '(nr.'+ str(idx) + ')')
+    airports.append(Sapt_df['airport'][idx]+ '(nr.'+ str(idx) + ')')
     airports_lon.append(Sapt_df['lon'][idx])
     airports_lat.append(Sapt_df['lat'][idx])
 fig.add_trace(
