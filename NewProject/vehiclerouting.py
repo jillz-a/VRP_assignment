@@ -254,7 +254,8 @@ for slat, dlat, slon, dlon, color, ntrains in source_to_dest:
 
 
 fig.update_layout(title_text='Connection Map Depicting Flights for Airline Network',
-                  height=700, width=900,
+                #   height=1000, width=1200,
+                autosize=True,
                   margin={"t": 0, "b": 0, "l": 0, "r": 0, "pad": 0},
                   showlegend=False,
                   geo=dict(showland=True, landcolor='white', countrycolor='grey', bgcolor="lightgrey", resolution=50))
