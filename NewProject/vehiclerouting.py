@@ -159,7 +159,7 @@ for index, row in r_all.iterrows():
                         color_lst.append('red')
                         slat_lst.append(pos['y'][2])
                         dlat_lst.append(pos['y'][n1])
-                        pos = pd.read_excel('NewProject/ModelData/LargeDataSet/nodes_loc.xlsx', sheet_name='loc')
+                        nr_trains.append(a)
                         
                         color_lst.append('red')
                         slat_lst.append(pos['y'][n1])
