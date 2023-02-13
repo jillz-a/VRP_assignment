@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from gurobipy import Model,GRB,LinExpr, quicksum
 import time
+import plotly.graph_objects as go
 
 r_out = pd.read_csv('r_out.csv', header=None)
 r_ret = pd.read_csv('r_ret.csv', header=None)
@@ -10,6 +11,7 @@ r_all = pd.concat((r_out, r_ret))
 dist = pd.read_excel('NewProject/ModelData/LargeDataSet/nodes_loc.xlsx', sheet_name='dist', header=None)
 dem = pd.read_csv('NewProject/ModelData/LargeDataSet/demand.csv')
 Retdem = pd.read_csv('NewProject/ModelData/LargeDataSet/demandReturn.csv')
+pos = pd.read_excel('NewProject/ModelData/LargeDataSet/nodes_loc.xlsx', sheet_name='loc')
 
 def demand(dem, n):
     return dem['capacity'][n] * dem['freq'][n]
@@ -130,3 +132,150 @@ for index, row in r_ret.iterrows():
                     print([1, index, a,b,c])
                 if x[0, index, a, b, c].X >0:
                     print([0, index, a,b,c])
+
+slat_lst = []
+slon_lst = []
+dlat_lst = []
+dlon_lst = []
+nr_trains = []
+
+Sapt_df = pd.read_csv('NewProject/ModelData/LargeDataSet/airportsUnique.csv')
+
+color_lst = []
+
+
+
+for index, row in r_all.iterrows():
+    n1, n2, n3 = row[1:4]
+    for a in range(1, n_trains):
+        for b in range(1, n_trains):
+            for c in range(n_trains):
+                if  n1 != 2 and n2 != 2 and n3 !=2: # and n1 != n2 and n2 != n3 and n3 != n1 and n1 != 2:
+                    
+                    if row[0] == 1 and x[1,index,a, b, c].X > 0:
+                        print('Outgoing',Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3])
+                        #import pdb;pdb.set_trace()
+                       
+                        color_lst.append('red')
+                        slat_lst.append(pos['y'][2])
+                        dlat_lst.append(pos['y'][n1])
+                        pos = pd.read_excel('NewProject/ModelData/LargeDataSet/nodes_loc.xlsx', sheet_name='loc')
+                        
+                        color_lst.append('red')
+                        slat_lst.append(pos['y'][n1])
+                        dlat_lst.append(pos['y'][n2])
+                        nr_trains.append(b)   
+                        
+                        color_lst.append('red')
+                        slat_lst.append(pos['y'][n2])
+                        dlat_lst.append(pos['y'][n3])
+                        nr_trains.append(c)
+
+                        
+                        slon_lst.append(pos['x'][2])
+                        dlon_lst.append(pos['x'][n1])
+                        slon_lst.append(pos['x'][n1])
+                        dlon_lst.append(pos['x'][n2])
+                        slon_lst.append(pos['x'][n2])
+                        dlon_lst.append(pos['x'][n3])
+
+
+                    if row[0] == 0 and x[0,index, a, b, c].X > 0:
+                        print('Return', Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3])
+                        #import pdb;pdb.set_trace()
+                        
+                        color_lst.append('blue')
+                        slat_lst.append(pos['y'][n1])
+                        dlat_lst.append(pos['y'][n2])
+                        nr_trains.append(a)
+                        
+                        color_lst.append('blue')
+                        slat_lst.append(pos['y'][n2])
+                        dlat_lst.append(pos['y'][n3])
+                        nr_trains.append(b)   
+                        
+                        color_lst.append('blue')
+                        slat_lst.append(pos['y'][n3])
+                        dlat_lst.append(pos['y'][2])
+                        nr_trains.append(c)
+
+                        
+                        slon_lst.append(pos['x'][n1])
+                        dlon_lst.append(pos['x'][n2])
+                        slon_lst.append(pos['x'][n2])
+                        dlon_lst.append(pos['x'][n3])
+                        slon_lst.append(pos['x'][n3])
+                        dlon_lst.append(pos['x'][2])
+
+
+
+# =============================================================================
+# 
+# for c in model.getConstrs():
+#   if c.Slack > 1e-6:
+#     print('Constraint %s is active at solution point' % (c.ConstrName))
+# 
+# =============================================================================
+fig = go.Figure()
+source_to_dest = zip(slat_lst, dlat_lst, slon_lst, dlon_lst, color_lst, nr_trains)
+
+#get_colors = lambda n: ["#%06x" % random.randint(0, 0xFFFFFF) for _ in range(n)]
+    
+
+#color_lst = get_colors(n_vehicles)
+# Loop through each flight entry
+for slat, dlat, slon, dlon, color, ntrains in source_to_dest:
+    if color == 'red':
+        textpos = 'top center'
+    if color == 'blue':
+        textpos = 'bottom center'
+
+    fig.add_trace(go.Scattergeo(
+                        lat=[slat, dlat],
+                        lon=[slon, dlon],
+                        mode='lines',
+                        # textposition=["middle center"],
+                        # hoverinfo = 'text',
+                        # text= ntrains,
+                        line=dict(width= 1, color = color)
+                        ))
+    fig.update_traces(line_dash='dash')
+
+    fig.add_trace(go.Scattergeo(
+                        lat=[(slat + dlat)/2],
+                        lon=[(slon + dlon)/2],
+                        mode='markers+text',
+                        textposition=[textpos],
+                        hoverinfo = 'text',
+                        text= ntrains,
+                        line=dict(width= 0, color = color)
+                        ))
+    
+
+
+fig.update_layout(title_text='Connection Map Depicting Flights for Airline Network',
+                  height=700, width=900,
+                  margin={"t": 0, "b": 0, "l": 0, "r": 0, "pad": 0},
+                  showlegend=False,
+                  geo=dict(showland=True, landcolor='white', countrycolor='grey', bgcolor="lightgrey", resolution=50))
+
+
+airports = []
+airports_lon = []
+airports_lat =[]
+
+for idx in range(len(Sapt_df['airport'])):
+    airports.append(Sapt_df['airport'][idx])#+ '(nr.'+ str(idx) + ')')
+    airports_lon.append(Sapt_df['lon'][idx])
+    airports_lat.append(Sapt_df['lat'][idx])
+fig.add_trace(
+    go.Scattergeo(
+                lon=airports_lon,
+                lat=airports_lat,
+                hoverinfo='text',
+                text=airports,
+                mode='markers+text',
+                textposition="top center",
+                marker=dict(size=3, color='rgb(0,0,0)', opacity=1)))
+
+fig.show()
