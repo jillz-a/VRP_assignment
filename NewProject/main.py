@@ -21,7 +21,7 @@ Retdem = pd.read_csv('NewProject/ModelData/LargeDataSet/demandReturn.csv')
 #Define constants
 
 n_vehicles = 50 #number of trains
-train_capacity = 1377 #377 # based of thalys
+train_capacity = 377 #377 # based of thalys
 t_types = 3
 t_1 = train_capacity
 t_2 = 2 * train_capacity
@@ -369,6 +369,10 @@ source_to_dest = zip(slat_lst, dlat_lst, slon_lst, dlon_lst, color_lst)
 #color_lst = get_colors(n_vehicles)
 # Loop through each flight entry
 for slat, dlat, slon, dlon, color in source_to_dest:
+    if color == 'blue':
+        dash = 'dashdot'
+    if color == 'red':
+        dash = 'dot'
 
     fig.add_trace(go.Scattergeo(
                         lat=[slat, dlat],
@@ -376,11 +380,11 @@ for slat, dlat, slon, dlon, color in source_to_dest:
                         mode='lines',
                         line=dict(width= 1, color = color)#_lst[num_flights])
                         ))
-    fig.update_traces(line_dash='dash')
+    fig.update_traces(line_dash=dash)
 
 
 fig.update_layout(title_text='Connection Map Depicting Flights for Airline Network',
-                  height=700, width=900,
+                  autosize=True,
                   margin={"t": 0, "b": 0, "l": 0, "r": 0, "pad": 0},
                   showlegend=False,
                   geo=dict(showland=True, landcolor='white', countrycolor='grey', bgcolor="lightgrey", resolution=50))
@@ -391,7 +395,7 @@ airports_lon = []
 airports_lat =[]
 
 for idx in range(len(Sapt_df['airport'])):
-    airports.append(Sapt_df['airport'][idx]+ '(nr.'+ str(idx) + ')')
+    airports.append(Sapt_df['airport'][idx])#+ '(nr.'+ str(idx) + ')')
     airports_lon.append(Sapt_df['lon'][idx])
     airports_lat.append(Sapt_df['lat'][idx])
 fig.add_trace(
