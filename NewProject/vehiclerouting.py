@@ -154,6 +154,7 @@ for index, row in r_all.iterrows():
                     
                     if row[0] == 1 and x[1,index,a, b, c].X > 0:
                         print('Outgoing',Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3])
+                        print([1, index, a,b,c])
                         #import pdb;pdb.set_trace()
                        
                         color_lst.append('red')
@@ -182,6 +183,7 @@ for index, row in r_all.iterrows():
 
                     if row[0] == 0 and x[0,index, a, b, c].X > 0:
                         print('Return', Sapt_df['airport'][n1],Sapt_df['airport'][n2], Sapt_df['airport'][n3])
+                        print([0, index, a,b,c])
                         #import pdb;pdb.set_trace()
                         
                         color_lst.append('blue')
@@ -227,8 +229,10 @@ source_to_dest = zip(slat_lst, dlat_lst, slon_lst, dlon_lst, color_lst, nr_train
 for slat, dlat, slon, dlon, color, ntrains in source_to_dest:
     if color == 'red':
         textpos = 'top center'
+        dash = 'dash'
     if color == 'blue':
         textpos = 'bottom center'
+        dash = 'dashdot'
 
     fig.add_trace(go.Scattergeo(
                         lat=[slat, dlat],
@@ -239,7 +243,7 @@ for slat, dlat, slon, dlon, color, ntrains in source_to_dest:
                         # text= ntrains,
                         line=dict(width= 1, color = color)
                         ))
-    fig.update_traces(line_dash='dash')
+    fig.update_traces(line_dash=dash)
 
     fig.add_trace(go.Scattergeo(
                         lat=[(slat + dlat)/2],
