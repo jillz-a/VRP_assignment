@@ -13,10 +13,10 @@ pio.renderers.default = 'browser'
 
 
 #import data
-dist = pd.read_excel('ModelData/LargeDataSet/nodes_loc.xlsx', sheet_name='dist', header=None) #distances between the nodes
-pos = pd.read_excel('ModelData/LargeDataSet/nodes_loc.xlsx', sheet_name='loc')
-dem = pd.read_csv('ModelData/LargeDataSet/demand.csv')
-Retdem = pd.read_csv('ModelData/LargeDataSet/demandReturn.csv')
+dist = pd.read_excel('NewProject/ModelData/LargeDataSet/nodes_loc.xlsx', sheet_name='dist', header=None) #distances between the nodes
+pos = pd.read_excel('NewProject/ModelData/LargeDataSet/nodes_loc.xlsx', sheet_name='loc')
+dem = pd.read_csv('NewProject/ModelData/LargeDataSet/demand.csv')
+Retdem = pd.read_csv('NewProject/ModelData/LargeDataSet/demandReturn.csv')
 
 #Define constants
 
@@ -276,7 +276,7 @@ dlat_lst = []
 dlon_lst = []
 nr_flights = []
 
-Sapt_df = pd.read_csv('ModelData/LargeDataSet/airportsUnique.csv')
+Sapt_df = pd.read_csv('NewProject/ModelData/LargeDataSet/airportsUnique.csv')
 
 color_lst = []
 
