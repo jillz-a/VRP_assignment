@@ -83,7 +83,7 @@ for index, row in r_out.iterrows():
         model.addConstr(quicksum(x[1, index, a, b, 0]*b for a in range(1, n_trains) for b in range(1, n_trains)), GRB.GREATER_EQUAL, np.ceil((demand(dem, n2))/train_capacity))
 
         #continuity
-        model.addConstr(quicksum(x[1, index, a, b, 0]*b for a in range(1, n_trains) for b in range(1, n_trains)), GRB.LESS_EQUAL, quicksum(x[1, index, a, b, 0]*a for a in range(1, n_trains) for b in range(1, n_trains)))
+        model.addConstr(quicksum(x[1, index, a, b, 0]*b for a in range(1, n_trains) for b in range(1, n_trains)), GRB.EQUAL, quicksum(x[1, index, a, b, 0]*a for a in range(1, n_trains) for b in range(1, n_trains)))
 
 #for returning routes        
 for index, row in r_ret.iterrows():
